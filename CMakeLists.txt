@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(phy3d)
+
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+find_package(OpenGL REQUIRED)
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+configure_file(base_scene.obj base_scene.obj COPYONLY)
+
+add_executable(phy3d src/main.cpp)
+if(WIN32)
+    target_link_libraries(phy3d SDL2::SDL2-static ${SDL2_LIBRARIES})
+else()
+    target_link_libraries(phy3d ${SDL2_LIBRARIES})
+endif()
+
+target_link_libraries(phy3d GL GLU)
