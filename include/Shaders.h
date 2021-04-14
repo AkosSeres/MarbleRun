@@ -6,7 +6,9 @@
 #include <SDL2/SDL_opengles2.h>
 
 namespace Shaders {
+extern const GLchar* baseVertex;
 extern const GLchar* squishVertex;
+extern const GLchar* customColorFragment;
 extern const GLchar* baseFragment;
 }  // namespace Shaders
 
