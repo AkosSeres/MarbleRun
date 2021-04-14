@@ -14,7 +14,7 @@
 #include "Shaders.h"
 
 class SDLInstance {
- private:
+ protected:
   SDL_Window* window;
   SDL_GLContext glContext;
   SDL_Renderer* renderer;
@@ -27,9 +27,14 @@ class SDLInstance {
   GLuint timeLocation;
 
   void handleEvents();
-  void loadGeometry();
-  void initShaders();
-  void mainLoop(Uint32 t = 0);
+  void initWindow(char const* titleStr = NULL, int w = 500, int h = 500);
+  virtual void loadGeometry();
+  virtual void initShaders();
+  virtual void mainLoop(Uint32 t = 0);
+
+  // Event callbacks
+  virtual void keyDownEvent(const SDL_KeyboardEvent& e){};
+  virtual void keyUpEvent(const SDL_KeyboardEvent& e){};
 
  public:
   SDLInstance(char const* titleStr = NULL);

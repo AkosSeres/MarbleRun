@@ -1,6 +1,12 @@
 #include "SDLInstance.h"
 
 SDLInstance::SDLInstance(char const* titleStr) {
+  initWindow(titleStr);
+  this->loadGeometry();
+  this->initShaders();
+}
+
+void SDLInstance::initWindow(char const* titleStr, int w, int h) {
   if (titleStr == NULL) titleStr = "";
   // Create SDL window
   window =
@@ -21,12 +27,6 @@ SDLInstance::SDLInstance(char const* titleStr) {
   SDL_GLContext glContext = SDL_GL_CreateContext(window);
   renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-
-  // Call the function to load the initial geometry into memory
-  loadGeometry();
-
-  // Call the function to compile and link the shaders to be used
-  initShaders();
 }
 
 void SDLInstance::loadGeometry() {
@@ -128,6 +128,16 @@ void SDLInstance::mainLoop(Uint32 t) {
 void SDLInstance::handleEvents() {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
-    if (e.type == SDL_QUIT) isRunning = false;
+    switch (e.type) {
+      case SDL_QUIT:
+        isRunning = false;
+        break;
+      case SDL_KEYDOWN:
+        keyDownEvent(e.key);
+        break;
+      case SDL_KEYUP:
+        keyUpEvent(e.key);
+        break;
+    }
   }
 }
