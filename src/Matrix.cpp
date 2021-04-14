@@ -26,7 +26,7 @@ void Matrix::mult(const Matrix& other) {
 /**
  * Multiplies two matrices and returns the result
  */
-static Matrix& mult(const Matrix& a, const Matrix& b) {
+Matrix Matrix::mult(const Matrix& a, const Matrix& b) {
   Matrix ret;
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
@@ -40,7 +40,7 @@ static Matrix& mult(const Matrix& a, const Matrix& b) {
 /**
  * Multiply operator for multiplying matrices
  */
-Matrix& Matrix::operator*(const Matrix& other) const {
+Matrix Matrix::operator*(const Matrix& other) const {
   return Matrix::mult((*this), other);
 }
 
@@ -55,7 +55,7 @@ Matrix& Matrix::operator*=(const Matrix& other) {
 /**
  * Multiply operator for multiplying the matrix with a scalar
  */
-Matrix& Matrix::operator*(const float scalar) const {
+Matrix Matrix::operator*(const float scalar) const {
   Matrix ret = (*this);
   for (int i = 0; i < 16; i++) ret.m[i] *= scalar;
   return ret;
@@ -73,7 +73,7 @@ Matrix& Matrix::operator*=(const float scalar) {
  * Returns a matrix with a scaling transformation with the same scaling factor
  * along all the axes
  */
-Matrix& Matrix::scaling(float factor) {
+Matrix Matrix::scaling(float factor) {
   Matrix ret;
   ret.m[0] = ret.m[5] = ret.m[10] = factor;
   return ret;
@@ -82,7 +82,7 @@ Matrix& Matrix::scaling(float factor) {
 /**
  * Returns a matrix with a scaling transformation with the given scaling factors
  */
-Matrix& Matrix::scaling(float factorX, float factorY, float factorZ) {
+Matrix Matrix::scaling(float factorX, float factorY, float factorZ) {
   Matrix ret;
   ret.m[0] = factorX;
   ret.m[5] = factorY;
@@ -93,7 +93,7 @@ Matrix& Matrix::scaling(float factorX, float factorY, float factorZ) {
 /**
  * Returns a translation transformation matrix with the given offsets
  */
-Matrix& Matrix::translation(float x, float y, float z) {
+Matrix Matrix::translation(float x, float y, float z) {
   Matrix ret;
   ret.m[12] = x;
   ret.m[13] = y;
@@ -104,7 +104,7 @@ Matrix& Matrix::translation(float x, float y, float z) {
 /**
  * Returns a rotation transformation matrix around the x axis by the given angle
  */
-Matrix& Matrix::rotationX(float angle) {
+Matrix Matrix::rotationX(float angle) {
   Matrix ret;
   float cosa = std::cos(angle);
   float sina = std::sin(angle);
@@ -118,7 +118,7 @@ Matrix& Matrix::rotationX(float angle) {
 /**
  * Returns a rotation transformation matrix around the y axis by the given angle
  */
-Matrix& Matrix::rotationY(float angle) {
+Matrix Matrix::rotationY(float angle) {
   Matrix ret;
   float cosa = std::cos(angle);
   float sina = std::sin(angle);
@@ -132,7 +132,7 @@ Matrix& Matrix::rotationY(float angle) {
 /**
  * Returns a rotation transformation matrix around the z axis by the given angle
  */
-Matrix& Matrix::rotationZ(float angle) {
+Matrix Matrix::rotationZ(float angle) {
   Matrix ret;
   float cosa = std::cos(angle);
   float sina = std::sin(angle);
@@ -147,7 +147,7 @@ Matrix& Matrix::rotationZ(float angle) {
  * Returns a rotation transformation matrix around the given axis by the given
  * angle
  */
-Matrix& Matrix::rotation(float angle, float ux, float uy, float uz) {
+Matrix Matrix::rotation(float angle, float ux, float uy, float uz) {
   Matrix ret;
   float cosa = std::cos(angle);
   float sina = std::sin(angle);
@@ -164,8 +164,8 @@ Matrix& Matrix::rotation(float angle, float ux, float uy, float uz) {
   return ret;
 }
 
-Matrix& Matrix::frustum(float left, float right, float bottom, float top,
-                        float zNear, float zFar) {
+Matrix Matrix::frustum(float left, float right, float bottom, float top,
+                       float zNear, float zFar) {
   float temp, xDist, yDist, zDist;
   temp = 2.0 * zNear;
   xDist = right - left;
@@ -183,10 +183,10 @@ Matrix& Matrix::frustum(float left, float right, float bottom, float top,
   return ret;
 }
 
-Matrix& Matrix::perspective(float fov, float aspectRatio, float zNear,
-                            float zFar) {
+Matrix Matrix::perspective(float fov, float aspectRatio, float zNear,
+                           float zFar) {
   float ymax, xmax;
-  ymax = zNear * tanf(fov);
+  ymax = zNear * std::tan(fov / 2);
   xmax = ymax * aspectRatio;
   return Matrix::frustum(-xmax, xmax, -ymax, ymax, zNear, zFar);
 }
