@@ -52,7 +52,7 @@ Vec3& Vec3::add(const Vec3& o) {
 /**
  * Subtracts another vector to the vector.
  */
-Vec3& Vec3::add(const Vec3& o) {
+Vec3& Vec3::sub(const Vec3& o) {
   x -= o.x;
   y -= o.y;
   z -= o.z;
@@ -62,7 +62,7 @@ Vec3& Vec3::add(const Vec3& o) {
 /**
  * Returns the dot product of the two vectors.
  */
-float Vec3::dot(const Vec3& o) const { return x * o.x + y * o.y + z * o.y; }
+float Vec3::dot(const Vec3& o) const { return x * o.x + y * o.y + z * o.z; }
 
 /**
  * Returns the cross product of the two vectors.
@@ -140,7 +140,7 @@ Vec3 Vec3::sub(const Vec3& v1, const Vec3& v2) {
  * Static function that returns the dot product of the given vectors.
  */
 float Vec3::dot(const Vec3& v1, const Vec3& v2) {
-  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.y;
+  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
 /**
@@ -155,7 +155,19 @@ Vec3 Vec3::cross(const Vec3& v1, const Vec3& v2) {
  * Returns the angle between the vectors.
  */
 float Vec3::angle(const Vec3& v1, const Vec3& v2) {
-  float dotp = v1 * v2;
-  dotp /= (v1.len() * v2.len());
+  float dotp = v1.dot(v2);
+  float lens = (v1.len() * v2.len());
+  if (lens == 0.0f) return 0.0f;
+  dotp /= lens;
   return std::acos(dotp);
+}
+
+/**
+ * Equals operator.
+ */
+Vec3& Vec3::operator=(const Vec3& o) {
+  (*this).x = o.x;
+  (*this).y = o.y;
+  (*this).z = o.z;
+  return (*this);
 }

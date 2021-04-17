@@ -9,8 +9,8 @@ class Vec3 {
  public:
   float x, y, z;  // Make the coordinates publicly accessible because vectors
                   // are well known and easy to handle
-  Vec3(float x_ = 0, float y_ = 0, float z_ = 0) : x{x_}, y{y_}, z{z_} {};
-  Vec3(const Vec3& v) : x{v.x}, y{v.y}, z{v.z} {};
+  Vec3(float x_ = 0, float y_ = 0, float z_ = 0) : x(x_), y(y_), z(z_) {}
+  Vec3(const Vec3& v) : x(v.x), y(v.y), z(v.z) {}
   float len() const;
   float lenSq() const;
   Vec3& setLen(float newLen);
@@ -39,10 +39,7 @@ class Vec3 {
   float operator*(const Vec3& v) const { return dot((*this), v); };
   Vec3 operator*(float a) { return Vec3(a * x, a * y, a * z); };
   Vec3& operator*=(float a) { return mult(a); };
-  Vec3& operator=(const Vec3& o) {
-    (*this) = Vec3(o);
-    return (*this);
-  }
+  Vec3& operator=(const Vec3& o);
 };
 
 #endif
