@@ -3,8 +3,10 @@
 
 #include <cmath>
 
+#include "Camera.h"
 #include "Matrix.h"
 #include "SDLInstance.h"
+#include "Vec3.h"
 
 class Scene3D : public SDLInstance {
  protected:
@@ -19,12 +21,16 @@ class Scene3D : public SDLInstance {
   GLint modelViewLocation;
   GLint colorLocation;
   GLint posAttrib;
-  Matrix projMatrix;
   GLuint elementbuffer;
 
+  Camera cam;
+
   bool WASDKeys[4];
+  bool spaceKey;
+  bool shiftKey;
   void keyDownEvent(const SDL_KeyboardEvent& e) override;
   void keyUpEvent(const SDL_KeyboardEvent& e) override;
+  void mouseMotionEvent(const SDL_MouseMotionEvent& e) override;
 
  public:
   Scene3D(char const* titleStr = NULL);

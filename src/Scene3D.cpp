@@ -1,10 +1,16 @@
 #include "Scene3D.h"
 
 Scene3D::Scene3D(char const* titleStr) {
-  WASDKeys[0] = WASDKeys[1] = WASDKeys[2] = WASDKeys[3] = false;
+  WASDKeys[0] = WASDKeys[1] = WASDKeys[2] = WASDKeys[3] = spaceKey = shiftKey =
+      false;
   initWindow(titleStr);
   this->loadGeometry();
   this->initShaders();
+
+  cam.setFOV(M_PI / 2.0f);
+  cam.setAspectRatio(1.0f);
+
+  if (!SDL_GetRelativeMouseMode()) SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 void Scene3D::loadGeometry() {
@@ -65,9 +71,6 @@ void Scene3D::initShaders() {
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(posAttrib);
 
-  // Create the perspective matrix
-  projMatrix = Matrix::perspective(M_PI / 4.0f, 1.0f, 1.0f, 300.0f);
-
   // Enable Z-buffering
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -79,18 +82,17 @@ void Scene3D::mainLoop(Uint32 t) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Rotate projection matrix when A or D is pressed
-  if (WASDKeys[1]) projMatrix.applyTransformation(Matrix::rotationY(0.01f));
-  if (WASDKeys[3]) projMatrix.applyTransformation(Matrix::rotationY(-0.01f));
+  if (WASDKeys[1]) cam.moveBy(cam.getRightDir() * -0.1f);
+  if (WASDKeys[3]) cam.moveBy(cam.getRightDir() * 0.1f);
+  if (WASDKeys[0]) cam.moveBy(cam.getForwardDir() * 0.1f);
+  if (WASDKeys[2]) cam.moveBy(cam.getForwardDir() * -0.1f);
+  if (spaceKey) cam.moveBy(Vec3(0.0f, 0.1f, 0.0f));
+  if (shiftKey) cam.moveBy(Vec3(0.0f, -0.1f, 0.0f));
 
-  // Rotate the object as time goes forward
-  Matrix modelViewMatrix = Matrix();
-  modelViewMatrix.applyTransformation(
-      Matrix::rotationX((float)SDL_GetTicks() / 1000.0f));
-  modelViewMatrix.applyTransformation(
-      Matrix::rotationY((float)SDL_GetTicks() / 692.3423f));
-  modelViewMatrix.applyTransformation(Matrix::translation(0.0f, 0.0f, -10.0f));
+  Matrix modelViewMatrix = Matrix::translation(0.0f, 0.0f, -10.0f);
 
   // Set matrices
+  Matrix projMatrix = cam.getProjMatrix(0.1f, 100.0f);
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
@@ -118,6 +120,12 @@ void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
     case SDLK_d:
       WASDKeys[3] = true;
       break;
+    case SDLK_SPACE:
+      spaceKey = true;
+      break;
+    case SDLK_LSHIFT:
+      shiftKey = true;
+      break;
     default:
       break;
   }
@@ -136,7 +144,18 @@ void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
     case SDLK_d:
       WASDKeys[3] = false;
       break;
+    case SDLK_SPACE:
+      spaceKey = false;
+      break;
+    case SDLK_LSHIFT:
+      shiftKey = false;
+      break;
     default:
       break;
   }
+}
+
+void Scene3D::mouseMotionEvent(const SDL_MouseMotionEvent& e) {
+  cam.tiltUp(-(float)e.yrel / 1500.0f);
+  cam.turnRight((float)e.xrel / 1500.0f);
 }
