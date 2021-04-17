@@ -35,6 +35,8 @@ class SDLInstance {
   // Event callbacks
   virtual void keyDownEvent(const SDL_KeyboardEvent& e){};
   virtual void keyUpEvent(const SDL_KeyboardEvent& e){};
+  virtual void mouseMotionEvent(const SDL_MouseMotionEvent& e){};
+  virtual void windowEvent(const SDL_WindowEvent& e){};
 
  public:
   SDLInstance(char const* titleStr = NULL);

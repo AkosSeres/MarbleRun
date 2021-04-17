@@ -138,6 +138,12 @@ void SDLInstance::handleEvents() {
       case SDL_KEYUP:
         keyUpEvent(e.key);
         break;
+      case SDL_MOUSEMOTION:
+        mouseMotionEvent(e.motion);
+        break;
+      case SDL_WINDOWEVENT:
+        windowEvent(e.window);
+        break;
     }
   }
 }
