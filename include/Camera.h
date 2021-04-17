@@ -27,7 +27,7 @@ class Camera {
   void turnRight(float angle) { dir.rotateY(-angle); }
   void turnLeft(float angle) { dir.rotateY(angle); }
   void tiltUp(float angle);
-  Vec3 getRightDir() const { return dir.cross(up); }
+  Vec3 getRightDir() const { return dir.cross(up).setLen(1.0f); }
   Vec3 getForwardDir() const;
   Matrix getProjMatrix(float zNear, float zFar) const;
 };

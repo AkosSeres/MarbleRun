@@ -1,14 +1,14 @@
 #include "Camera.h"
 
 // Set default up direction
-const Vec3 Camera::up = Vec3(0, 1, 0);
+const Vec3 Camera::up = {0.0f, 1.0f, 0.0f};
 
 /**
  * Initalises the camera.
  */
 Camera::Camera() {
   pos = Vec3();
-  dir = Vec3(0, 0, 1);
+  dir = Vec3(0, 0, -1);
   aspectRatio = 1;
   fov = M_PI_4;
 }
@@ -42,7 +42,7 @@ void Camera::tiltUp(float angle) {
  * Returns the horizontal forward direction of the camera.
  */
 Vec3 Camera::getForwardDir() const {
-  Vec3 forward(dir);
+  Vec3 forward = dir;
   forward.y = 0;
   forward.setLen(1);
   return forward;
@@ -52,14 +52,15 @@ Vec3 Camera::getForwardDir() const {
  * Returns a projection matrix that can be used in rendering.
  */
 Matrix Camera::getProjMatrix(float zNear, float zFar) const {
-  Matrix ret = Matrix::perspective(fov, aspectRatio, zNear, zFar);
+  Matrix ret;
   auto right = getRightDir();
   auto forward = getForwardDir();
   float downAngle = Vec3::angle(forward, dir);
   if (dir.y < 0.0f) downAngle = -downAngle;
+  ret.applyTransformation(Matrix::translation(-pos.x, -pos.y, -pos.z));
   ret.applyTransformation(
-      Matrix::rotation(downAngle, right.x, right.y, right.z));
-  ret.applyTransformation(Matrix::rotationY(std::atan2(dir.z, dir.x)));
-  ret.applyTransformation(Matrix::translation(pos.x, pos.y, pos.z));
+      Matrix::rotation(-downAngle, right.x, right.y, right.z));
+  ret.applyTransformation(Matrix::rotationY(M_PI - std::atan2(dir.x, dir.z)));
+  ret.applyTransformation(Matrix::perspective(fov, aspectRatio, zNear, zFar));
   return ret;
 }
