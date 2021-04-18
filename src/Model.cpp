@@ -12,8 +12,6 @@ Model::Model() {
   // Create vertex and index buffers
   glGenBuffers(1, &vertexBufferObj);
   glGenBuffers(1, &elementBufferObj);
-
-  loadModel();
 }
 
 /**
@@ -73,6 +71,15 @@ void Model::render(GLenum mode) const {
 }
 
 /**
+ * Renders the model with the given rendering mode.
+ */
+void Model::renderOneByOne(GLenum mode) const {
+  bindBuffers();
+  for (GLuint i = 0; i < (iCount / 3); i++)
+    glDrawElements(mode, 3, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * i * 3));
+}
+
+/**
  * Constructor of the sphere model. Sets the resolution and radius of the sphere
  * to be generated.
  */
@@ -88,6 +95,14 @@ SphereModel::SphereModel(int resolution, float radius) {
 
   sphereResolution = resolution;
   R = radius;
+}
+
+/**
+ * Frees up the used space.
+ */
+SphereModel::~SphereModel() {
+  delete[] vertices;
+  delete[] indices;
 }
 
 /**
@@ -167,4 +182,120 @@ void SphereModel::renderStriped(bool side) const {
     else
       glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(i * 12));
   }
+}
+
+/**
+ * Creates the empty model object for the obj to be loaded.
+ */
+ObjModel::ObjModel(const char* fileName_) {
+  fileName = fileName_;
+
+  vertices = NULL;
+  vCount = 0;
+  indices = NULL;
+  iCount = 0;
+
+  // Create vertex and index buffers
+  glGenBuffers(1, &vertexBufferObj);
+  glGenBuffers(1, &elementBufferObj);
+}
+
+/**
+ * Frees up the allocated memory.
+ */
+ObjModel::~ObjModel() {
+  delete[] indices;
+  delete[] vertices;
+}
+
+/**
+ * Loads the geometry from the given file.
+ */
+void ObjModel::loadModel() {
+  std::ifstream file;
+  file.exceptions(std::ifstream::badbit);
+
+  try {
+    file.open(fileName);
+    std::string line;
+    GLuint vAlloc = 512;
+    GLuint iAlloc = 512;
+    GLuint vertNum = 0;
+    GLuint triangleNum = 0;
+    vertices = new GLfloat[vAlloc * 3];
+    indices = new GLuint[iAlloc * 3];
+
+    auto reallocVertices = [&]() {
+      GLfloat* newAddr = new GLfloat[vAlloc * 6];
+      std::memcpy(newAddr, vertices, sizeof(GLfloat) * 3 * vAlloc);
+      delete[] vertices;
+      vertices = newAddr;
+      vAlloc *= 2;
+    };
+
+    auto appendVertex = [&](float x, float y, float z) {
+      vertices[3 * vertNum] = x;
+      vertices[3 * vertNum + 1] = y;
+      vertices[3 * vertNum + 2] = z;
+      vertNum++;
+      if (vertNum > (vAlloc - 10)) reallocVertices();
+    };
+
+    auto reallocIndices = [&]() {
+      GLuint* newAddr = new GLuint[iAlloc * 6];
+      std::memcpy(newAddr, indices, sizeof(GLuint) * 3 * iAlloc);
+      delete[] indices;
+      indices = newAddr;
+      iAlloc *= 2;
+    };
+
+    auto appendIndices = [&](GLuint a, GLuint b, GLuint c) {
+      indices[3 * triangleNum] = a;
+      indices[3 * triangleNum + 1] = b;
+      indices[3 * triangleNum + 2] = c;
+      triangleNum++;
+      if (triangleNum > (iAlloc - 10)) reallocIndices();
+    };
+
+    auto extractNumber = [](std::string& s) {
+      std::istringstream ss(s);
+      int num;
+      ss >> num;
+      return num;
+    };
+
+    while (getline(file, line)) {
+      // The line contains a vertex
+      if (line[0] == 'v' && (line[1] == ' ' || line[1] == '\t')) {
+        std::istringstream loader(line.substr(1));
+        float x, y, z;
+        loader >> x >> y >> z;
+        appendVertex(x, y, z);
+      }
+      // The currently read line describes a triangle/polygon
+      if (line[0] == 'f' && (line[1] == ' ' || line[1] == '\t')) {
+        std::istringstream loader(line.substr(1));
+        std::string i1, i2, i3;
+        loader >> i1 >> i2 >> i3;
+        appendIndices(extractNumber(i1) - 1, extractNumber(i2) - 1,
+                      extractNumber(i3) - 1);
+        std::string more;
+        loader >> more;
+        while (more.length() > 0) {
+          i2 = i3;
+          i3 = more;
+          appendIndices(extractNumber(i1) - 1, extractNumber(i2) - 1,
+                        extractNumber(i3) - 1);
+          loader >> more;
+        }
+      }
+    }
+
+    vCount = vertNum * 3;
+    iCount = triangleNum * 3;
+  } catch (const std::ifstream::failure& e) {
+    SDL_Log("Could not open and read file: %s", fileName.c_str());
+  }
+
+  file.close();
 }
