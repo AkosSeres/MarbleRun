@@ -144,6 +144,14 @@ void SDLInstance::handleEvents() {
       case SDL_WINDOWEVENT:
         windowEvent(e.window);
         break;
+      case SDL_MOUSEBUTTONDOWN:
+        mouseButtonDownEvent(e.button);
+        break;
+      case SDL_MOUSEBUTTONUP:
+        mouseButtonUpEvent(e.button);
+        break;
+      default:
+        break;
     }
   }
 }
