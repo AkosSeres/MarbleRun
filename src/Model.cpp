@@ -82,6 +82,19 @@ void Model::renderOneByOne(GLint posAttrib, GLenum mode) const {
 }
 
 /**
+ * Returns the number of vertices in the model.
+ */
+GLuint Model::getVertexNum() const { return vCount / 3; }
+
+/**
+ * Returns the vertex at the given index as a Vec3.
+ */
+Vec3 Model::getVertex(GLuint index) const {
+  return Vec3(vertices[index * 3], vertices[index * 3 + 1],
+              vertices[index * 3 + 2]);
+}
+
+/**
  * Constructor of the sphere model. Sets the resolution and radius of the sphere
  * to be generated.
  */

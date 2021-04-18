@@ -30,6 +30,8 @@ class Model {
   void bindBuffers() const;
   void render(GLint posAttrib, GLenum mode = GL_TRIANGLES) const;
   void renderOneByOne(GLint posAttrib, GLenum mode = GL_TRIANGLES) const;
+  GLuint getVertexNum() const;
+  Vec3 getVertex(GLuint index) const;
 };
 
 class SphereModel : public Model {
