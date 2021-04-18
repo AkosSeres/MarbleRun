@@ -18,6 +18,10 @@ void Scene3D::loadGeometry() {
   content.setResolution(18);
   content.loadModel();
   content.loadToGL();
+
+  world.setFileName("base_scene.obj");
+  world.loadModel();
+  world.loadToGL();
 }
 
 void Scene3D::initShaders() {
@@ -50,6 +54,8 @@ void Scene3D::initShaders() {
   glEnableVertexAttribArray(posAttrib);
 
   // Enable Z-buffering
+  glEnable(GL_POLYGON_OFFSET_FILL);
+  glPolygonOffset(0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 }
@@ -73,6 +79,12 @@ void Scene3D::mainLoop(Uint32 t) {
   Matrix projMatrix = cam.getProjMatrix(0.1f, 100.0f);
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
+
+  // Render the world
+  glUniform4f(colorLocation, 0.05f, 0.05f, 0.2f, 0.75f);
+  world.renderOneByOne(GL_LINE_LOOP);
+  glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
+  world.render();
 
   // Render the sphere looking like a beach ball
   glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);

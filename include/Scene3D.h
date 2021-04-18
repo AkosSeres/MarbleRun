@@ -22,6 +22,7 @@ class Scene3D : public SDLInstance {
 
   Camera cam;
   SphereModel content;
+  ObjModel world;
 
   bool WASDKeys[4];
   bool spaceKey;
