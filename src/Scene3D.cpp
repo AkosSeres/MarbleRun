@@ -10,6 +10,9 @@ Scene3D::Scene3D(char const* titleStr) {
   cam.setFOV(M_PI / 2.0f);
   cam.setAspectRatio(1.0f);
 
+  balls = NULL;
+  ballCount = 0;
+
   if (!SDL_GetRelativeMouseMode()) SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
@@ -22,9 +25,6 @@ void Scene3D::loadGeometry() {
   world.setFileName("base_scene.obj");
   world.loadModel();
   world.loadToGL();
-
-  ball.setPosition(Vec3(0, 10, 0));
-  ball.setRadius(5);
 }
 
 void Scene3D::initShaders() {
@@ -74,16 +74,14 @@ void Scene3D::mainLoop(Uint32 t) {
   if (WASDKeys[0]) cam.moveBy(cam.getForwardDir());
   if (WASDKeys[2]) cam.moveBy(-cam.getForwardDir());
   if (spaceKey) cam.moveBy(Vec3(0.0f, 1.0f, 0.0f));
-  if (shiftKey) {
-    cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
-    ball.setPosition(cam.getPos());
-    ball.setVel(Vec3(0, 0, 0));
-  }
+  if (shiftKey) cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
 
-  // Update the ball
+  // Update the balls
   Vec3 gravity = Vec3(0, -100, 0);
-  ball.update(1.0f / 60.0f, gravity);
-  ball.collideWithModel(world);
+  for (int i = 0; i < ballCount; i++) {
+    balls[i].update(1.0f / 60.0f, gravity);
+    balls[i].collideWithModel(world);
+  }
 
   // Set matrices
   Matrix modelViewMatrix;
@@ -97,15 +95,18 @@ void Scene3D::mainLoop(Uint32 t) {
   glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
   world.render(posAttrib);
 
-  // Set the transform of the ball
-  modelViewMatrix = ball.getModelViewMatrix();
-  glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
+  // Render the balls
+  for (int i = 0; i < ballCount; i++) {
+    // Set the transform of the ball
+    modelViewMatrix = balls[i].getModelViewMatrix();
+    glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
-  // Render the sphere looking like a beach ball
-  glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);
-  content.renderStriped(posAttrib);
-  glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
-  content.renderStriped(posAttrib, true);
+    // Render the sphere looking like a beach ball
+    glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);
+    content.renderStriped(posAttrib);
+    glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
+    content.renderStriped(posAttrib, true);
+  }
 }
 
 void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
@@ -161,3 +162,23 @@ void Scene3D::mouseMotionEvent(const SDL_MouseMotionEvent& e) {
   cam.tiltUp(-(float)e.yrel / 1500.0f);
   cam.turnRight((float)e.xrel / 1500.0f);
 }
+
+void Scene3D::mouseButtonDownEvent(const SDL_MouseButtonEvent& e) {
+  if (e.button == SDL_BUTTON_LEFT) placeBall();
+}
+
+/**
+ * Shoots a ball out of the camera.
+ */
+void Scene3D::placeBall() {
+  Ball* newAddr = new Ball[ballCount + 1];
+  std::memcpy(newAddr, balls, sizeof(Ball) * ballCount);
+  ballCount++;
+  delete[] balls;
+  balls = newAddr;
+  balls[ballCount - 1].setPosition(cam.getPos());
+  balls[ballCount - 1].setVel(cam.getDir());
+  balls[ballCount - 1].setRadius(5);
+}
+
+Scene3D::~Scene3D() { delete[] balls; }

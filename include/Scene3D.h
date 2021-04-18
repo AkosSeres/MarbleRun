@@ -24,7 +24,8 @@ class Scene3D : public SDLInstance {
   Camera cam;
   SphereModel content;
   ObjModel world;
-  Ball ball;
+  Ball* balls;
+  int ballCount;
 
   bool WASDKeys[4];
   bool spaceKey;
@@ -32,9 +33,13 @@ class Scene3D : public SDLInstance {
   void keyDownEvent(const SDL_KeyboardEvent& e) override;
   void keyUpEvent(const SDL_KeyboardEvent& e) override;
   void mouseMotionEvent(const SDL_MouseMotionEvent& e) override;
+  void mouseButtonDownEvent(const SDL_MouseButtonEvent& e) override;
+
+  void placeBall();
 
  public:
   Scene3D(char const* titleStr = NULL);
+  ~Scene3D();
 };
 
 #endif
