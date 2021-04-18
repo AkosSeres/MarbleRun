@@ -5,6 +5,7 @@
 
 #include "Camera.h"
 #include "Matrix.h"
+#include "Model.h"
 #include "SDLInstance.h"
 #include "Vec3.h"
 
@@ -14,16 +15,13 @@ class Scene3D : public SDLInstance {
   void initShaders() override;
   void mainLoop(Uint32 t = 0) override;
 
-  GLfloat* cubeVertices;
-  GLushort* indices;
-
   GLint projectionLocation;
   GLint modelViewLocation;
   GLint colorLocation;
   GLint posAttrib;
-  GLuint elementbuffer;
 
   Camera cam;
+  SphereModel content;
 
   bool WASDKeys[4];
   bool spaceKey;

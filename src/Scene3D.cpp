@@ -14,32 +14,10 @@ Scene3D::Scene3D(char const* titleStr) {
 }
 
 void Scene3D::loadGeometry() {
-  // Init vertex array
-  GLuint vertexArr;
-  glGenVertexArraysOES(1, &vertexArr);
-  glBindVertexArrayOES(vertexArr);
-
-  // Load an octahedron
-  // The first array contains the vertices of the object
-  GLfloat vs[] = {0.0f,  1.0f, 0.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f,  -1.0f,
-                  -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,  0.0f,  -1.0f, 0.0f};
-  // The second array contains the index triplets describing the triangles to
-  // render The concept is pretty similar to how obj files store 3D models
-  GLushort is[] = {4, 0, 1, 1, 2, 0, 2, 3, 0, 3, 4, 0,
-                   4, 1, 5, 5, 1, 2, 2, 3, 5, 3, 4, 5};
-  indices = is;
-  cubeVertices = vs;
-
-  // Load the vertices into the vertex buffer
-  GLuint vertexBufferObj;
-  glGenBuffers(1, &vertexBufferObj);
-  // Load the vertex indices into the element buffer
-  GLuint elementBufferObj;
-  glGenBuffers(1, &elementBufferObj);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObj);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vs), cubeVertices, GL_STATIC_DRAW);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferObj);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(is), indices, GL_STATIC_DRAW);
+  content.setRadius(1.0f);
+  content.setResolution(18);
+  content.loadModel();
+  content.loadToGL();
 }
 
 void Scene3D::initShaders() {
@@ -96,14 +74,11 @@ void Scene3D::mainLoop(Uint32 t) {
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
-  // Render the object in grey
+  // Render the sphere looking like a beach ball
+  glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);
+  content.renderStriped();
   glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
-  glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_SHORT, 0);
-  // And also render it's wireframe in dark blue
-  // I'm not planning on implementing shading so I use wireframe rendering so
-  // the user can get a sense of the object's shape
-  glUniform4f(colorLocation, 0.0f, 0.0f, 0.125f, 1.0f);
-  glDrawElements(GL_LINE_LOOP, 24, GL_UNSIGNED_SHORT, 0);
+  content.renderStriped(true);
 }
 
 void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
