@@ -93,12 +93,10 @@ Vec3 Ball::getVelInPos(const Vec3& p) const {
  * collision response.
  */
 void Ball::collideWithModel(const Model& m) {
-  GLuint vNum = m.getVertexNum();
-  for (int i = 0; i < vNum; i++) {
-    Vec3 v = m.getVertex(i);
+  auto collideWithPoint = [&](const Vec3& v) {
     Vec3 d = Vec3::sub(v, pos);
-    if (d.lenSq() > (r * r)) continue;
-    if ((vel.dot(d)) <= 0) continue;
+    if (d.lenSq() > (r * r)) return;
+    if ((vel.dot(d)) <= 0) return;
     // Separate the bodies
     d.setLen(r - d.len());
     pos.sub(d);
@@ -122,5 +120,34 @@ void Ball::collideWithModel(const Model& m) {
     d = Vec3::sub(cp, pos);
     vel.add(Vec3::mult(fResp, 1 / getMass()));
     angVel.add(Vec3::mult(d.cross(fResp), 1 / getAngularMass()));
+  };
+
+  GLuint vNum = m.getVertexNum();
+  for (int i = 0; i < vNum; i++) {
+    collideWithPoint(m.getVertex(i));
+  }
+
+  GLuint tNum = m.getTriangleNum();
+  for (int i = 0; i < tNum; i++) {
+    Vec3 a, b, c;
+    m.getTriangle(i, &a, &b, &c);
+    Vec3 AB = b - a;
+    Vec3 BC = c - b;
+    Vec3 CA = a - c;
+    Vec3 AC = c - a;
+    Vec3 n = Vec3::cross(AB, AC);
+    Vec3 aRel = pos - a;
+    Vec3 bRel = pos - b;
+    Vec3 cRel = pos - c;
+    Vec3 aPerp = n.cross(AB);
+    Vec3 bPerp = n.cross(BC);
+    Vec3 cPerp = n.cross(CA);
+    if (Vec3::dot(aRel, aPerp) >= 0 && Vec3::dot(bRel, bPerp) >= 0 &&
+        Vec3::dot(cRel, cPerp) >= 0) {
+      n.setLen(1);
+      n.mult(n.dot(aRel));
+      Vec3 cp = Vec3::sub(pos, n);
+      collideWithPoint(cp);
+    }
   }
 }

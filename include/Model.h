@@ -32,6 +32,8 @@ class Model {
   void renderOneByOne(GLint posAttrib, GLenum mode = GL_TRIANGLES) const;
   GLuint getVertexNum() const;
   Vec3 getVertex(GLuint index) const;
+  GLuint getTriangleNum() const;
+  void getTriangle(GLuint index, Vec3* a, Vec3* b, Vec3* c) const;
 };
 
 class SphereModel : public Model {

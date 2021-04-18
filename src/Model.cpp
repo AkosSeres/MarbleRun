@@ -95,6 +95,20 @@ Vec3 Model::getVertex(GLuint index) const {
 }
 
 /**
+ * Returns the number of triangles in the model.
+ */
+GLuint Model::getTriangleNum() const { return iCount / 3; }
+
+/**
+ * Loads the requested triangle's vertices into the Vec3 pointers.
+ */
+void Model::getTriangle(GLuint index, Vec3* a, Vec3* b, Vec3* c) const {
+  (*a) = getVertex(indices[index * 3]);
+  (*b) = getVertex(indices[index * 3 + 1]);
+  (*c) = getVertex(indices[index * 3 + 2]);
+}
+
+/**
  * Constructor of the sphere model. Sets the resolution and radius of the sphere
  * to be generated.
  */
