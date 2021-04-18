@@ -65,16 +65,18 @@ void Model::bindBuffers() const {
 /**
  * Renders the model with the given rendering mode.
  */
-void Model::render(GLenum mode) const {
+void Model::render(GLint posAttrib, GLenum mode) const {
   bindBuffers();
+  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glDrawElements(mode, iCount, GL_UNSIGNED_INT, 0);
 }
 
 /**
  * Renders the model with the given rendering mode.
  */
-void Model::renderOneByOne(GLenum mode) const {
+void Model::renderOneByOne(GLint posAttrib, GLenum mode) const {
   bindBuffers();
+  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
   for (GLuint i = 0; i < (iCount / 3); i++)
     glDrawElements(mode, 3, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * i * 3));
 }
@@ -173,14 +175,17 @@ void SphereModel::loadModel() {
 /**
  * Renders only half of the sphere in stripes.
  */
-void SphereModel::renderStriped(bool side) const {
+void SphereModel::renderStriped(GLint posAttrib, bool side) const {
   bindBuffers();
+  glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
   GLuint triCount = iCount / 3;
   for (int i = 0; i < triCount; i += 4) {
     if (side)
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)((i + 2) * 12));
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
+                     (void*)(sizeof(GLuint) * (i + 2) * 3));
     else
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)(i * 12));
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
+                     (void*)(sizeof(GLuint) * i * 3));
   }
 }
 

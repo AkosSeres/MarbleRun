@@ -51,7 +51,7 @@ void Scene3D::initShaders() {
 
   // Tell OpenGL the format of the vertices
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(posAttrib);
+  // glEnableVertexAttribArray(posAttrib);
 
   // Enable Z-buffering
   glEnable(GL_POLYGON_OFFSET_FILL);
@@ -66,31 +66,31 @@ void Scene3D::mainLoop(Uint32 t) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Rotate projection matrix when A or D is pressed
-  if (WASDKeys[1]) cam.moveBy(cam.getRightDir() * -0.1f);
-  if (WASDKeys[3]) cam.moveBy(cam.getRightDir() * 0.1f);
-  if (WASDKeys[0]) cam.moveBy(cam.getForwardDir() * 0.1f);
-  if (WASDKeys[2]) cam.moveBy(cam.getForwardDir() * -0.1f);
-  if (spaceKey) cam.moveBy(Vec3(0.0f, 0.1f, 0.0f));
-  if (shiftKey) cam.moveBy(Vec3(0.0f, -0.1f, 0.0f));
+  if (WASDKeys[1]) cam.moveBy(-cam.getRightDir());
+  if (WASDKeys[3]) cam.moveBy(cam.getRightDir());
+  if (WASDKeys[0]) cam.moveBy(cam.getForwardDir());
+  if (WASDKeys[2]) cam.moveBy(-cam.getForwardDir());
+  if (spaceKey) cam.moveBy(Vec3(0.0f, 1.0f, 0.0f));
+  if (shiftKey) cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
 
-  Matrix modelViewMatrix = Matrix::translation(0.0f, 0.0f, -10.0f);
+  Matrix modelViewMatrix;  // = Matrix::translation(0.0f, 0.0f, -10.0f);
 
   // Set matrices
-  Matrix projMatrix = cam.getProjMatrix(0.1f, 100.0f);
+  Matrix projMatrix = cam.getProjMatrix(0.5f, 300.0f);
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
   // Render the world
   glUniform4f(colorLocation, 0.05f, 0.05f, 0.2f, 0.75f);
-  world.renderOneByOne(GL_LINE_LOOP);
+  world.renderOneByOne(posAttrib, GL_LINE_LOOP);
   glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
-  world.render();
+  world.render(posAttrib);
 
   // Render the sphere looking like a beach ball
   glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);
-  content.renderStriped();
+  content.renderStriped(posAttrib);
   glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
-  content.renderStriped(true);
+  content.renderStriped(posAttrib, true);
 }
 
 void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {

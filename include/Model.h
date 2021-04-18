@@ -28,8 +28,8 @@ class Model {
   virtual void loadModel();
   void loadToGL() const;
   void bindBuffers() const;
-  void render(GLenum mode = GL_TRIANGLES) const;
-  void renderOneByOne(GLenum mode = GL_TRIANGLES) const;
+  void render(GLint posAttrib, GLenum mode = GL_TRIANGLES) const;
+  void renderOneByOne(GLint posAttrib, GLenum mode = GL_TRIANGLES) const;
 };
 
 class SphereModel : public Model {
@@ -43,7 +43,7 @@ class SphereModel : public Model {
   void setResolution(int newRes) { sphereResolution = newRes; }
   void setRadius(float r) { R = r; }
   void loadModel() override;
-  void renderStriped(bool side = false) const;
+  void renderStriped(GLint posAttrib, bool side = false) const;
 };
 
 class ObjModel : public Model {
