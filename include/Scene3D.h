@@ -3,6 +3,7 @@
 
 #include <cmath>
 
+#include "Ball.h"
 #include "Camera.h"
 #include "Matrix.h"
 #include "Model.h"
@@ -23,6 +24,7 @@ class Scene3D : public SDLInstance {
   Camera cam;
   SphereModel content;
   ObjModel world;
+  Ball ball;
 
   bool WASDKeys[4];
   bool spaceKey;

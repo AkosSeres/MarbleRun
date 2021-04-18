@@ -27,18 +27,19 @@ class Vec3 {
 
   static Vec3 add(const Vec3& v1, const Vec3& v2);
   static Vec3 sub(const Vec3& v1, const Vec3& v2);
+  static Vec3 mult(const Vec3& v1, float a);
   static float dot(const Vec3& v1, const Vec3& v2);
   static Vec3 cross(const Vec3& v1, const Vec3& v2);
   static float angle(const Vec3& v1, const Vec3& v2);
 
   Vec3 operator+(const Vec3& v) const { return add((*this), v); };
   Vec3 operator-(const Vec3& v) const { return sub((*this), v); };
-  Vec3& operator+=(const Vec3& v) { return add(v); };
-  Vec3& operator-=(const Vec3& v) { return sub(v); };
+  Vec3& operator+=(const Vec3& v) { return this->add(v); };
+  Vec3& operator-=(const Vec3& v) { return this->sub(v); };
   Vec3 operator-() const { return Vec3(-x, -y, -z); };
   float operator*(const Vec3& v) const { return dot((*this), v); };
   Vec3 operator*(float a) { return Vec3(a * x, a * y, a * z); };
-  Vec3& operator*=(float a) { return mult(a); };
+  Vec3& operator*=(float a) { return this->mult(a); };
   Vec3& operator=(const Vec3& o);
 };
 

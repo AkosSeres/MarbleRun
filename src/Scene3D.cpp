@@ -22,6 +22,9 @@ void Scene3D::loadGeometry() {
   world.setFileName("base_scene.obj");
   world.loadModel();
   world.loadToGL();
+
+  ball.setPosition(Vec3(0, 10, 0));
+  ball.setRadius(5);
 }
 
 void Scene3D::initShaders() {
@@ -71,11 +74,19 @@ void Scene3D::mainLoop(Uint32 t) {
   if (WASDKeys[0]) cam.moveBy(cam.getForwardDir());
   if (WASDKeys[2]) cam.moveBy(-cam.getForwardDir());
   if (spaceKey) cam.moveBy(Vec3(0.0f, 1.0f, 0.0f));
-  if (shiftKey) cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
+  if (shiftKey) {
+    cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
+    ball.setPosition(cam.getPos());
+    ball.setVel(Vec3(0, 0, 0));
+  }
 
-  Matrix modelViewMatrix;  // = Matrix::translation(0.0f, 0.0f, -10.0f);
+  // Update the ball
+  Vec3 gravity = Vec3(0, -100, 0);
+  ball.update(1.0f / 60.0f, gravity);
+  ball.collideWithModel(world);
 
   // Set matrices
+  Matrix modelViewMatrix;
   Matrix projMatrix = cam.getProjMatrix(0.5f, 300.0f);
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
@@ -85,6 +96,10 @@ void Scene3D::mainLoop(Uint32 t) {
   world.renderOneByOne(posAttrib, GL_LINE_LOOP);
   glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
   world.render(posAttrib);
+
+  // Set the transform of the ball
+  modelViewMatrix = ball.getModelViewMatrix();
+  glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
   // Render the sphere looking like a beach ball
   glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);

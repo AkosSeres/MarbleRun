@@ -15,7 +15,8 @@ float Vec3::lenSq() const { return (x * x + y * y + z * z); }
  * direction unchanged.
  */
 Vec3& Vec3::setLen(float newLen) {
-  mult(newLen / len());
+  float l = len();
+  if (l > 0) mult(newLen / len());
   return (*this);
 }
 
@@ -134,6 +135,10 @@ Vec3 Vec3::add(const Vec3& v1, const Vec3& v2) {
  */
 Vec3 Vec3::sub(const Vec3& v1, const Vec3& v2) {
   return Vec3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+}
+
+Vec3 Vec3::mult(const Vec3& v1, float a) {
+  return Vec3(v1.x * a, v1.y * a, v1.z * a);
 }
 
 /**
