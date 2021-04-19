@@ -85,14 +85,14 @@ void Scene3D::mainLoop(Uint32 t) {
 
   // Set matrices
   Matrix modelViewMatrix;
-  Matrix projMatrix = cam.getProjMatrix(0.5f, 300.0f);
+  Matrix projMatrix = cam.getProjMatrix(0.5f, 350.0f);
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
   // Render the world
-  glUniform4f(colorLocation, 0.05f, 0.05f, 0.2f, 0.75f);
+  glUniform4f(colorLocation, 0.05f, 0.05f, 0.2f, 1.0f);
   world.renderOneByOne(posAttrib, GL_LINE_LOOP);
-  glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
+  glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 1.0f);
   world.render(posAttrib);
 
   // Render the balls
@@ -102,9 +102,9 @@ void Scene3D::mainLoop(Uint32 t) {
     glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
     // Render the sphere looking like a beach ball
-    glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 0.75f);
+    glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 1.0f);
     content.renderStriped(posAttrib);
-    glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 0.75f);
+    glUniform4f(colorLocation, 0.8f, 0.8f, 0.8f, 1.0f);
     content.renderStriped(posAttrib, true);
   }
 }
