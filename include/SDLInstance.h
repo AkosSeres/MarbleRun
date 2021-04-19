@@ -21,6 +21,8 @@ class SDLInstance {
   GLuint vertexBufferObj;
   bool isRunning = false;
 
+  int width, height;
+
   GLuint vertexShader;
   GLuint pixelShader;
   GLuint shaderProgram;

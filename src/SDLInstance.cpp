@@ -6,12 +6,28 @@ SDLInstance::SDLInstance(char const* titleStr) {
   this->initShaders();
 }
 
+#ifdef __EMSCRIPTEN__
+namespace WidthGetter {
+EM_JS(int, getBrowserWidth, (), { return window.innerWidth; });
+EM_JS(int, getBrowserHeight, (), { return window.innerHeight; });
+}  // namespace WidthGetter
+#endif
+
 void SDLInstance::initWindow(char const* titleStr, int w, int h) {
   if (titleStr == NULL) titleStr = "";
+
+#ifdef __EMSCRIPTEN__
+  w = WidthGetter::getBrowserWidth();
+  h = WidthGetter::getBrowserHeight();
+#endif
+  width = w;
+  height = h;
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
   // Create SDL window
   window =
       SDL_CreateWindow(titleStr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       500, 500, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+                       width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
   // Set OpenGL related attributes
   // OpenGL ES has to be used to retain browser compatibility

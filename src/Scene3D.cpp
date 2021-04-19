@@ -7,8 +7,8 @@ Scene3D::Scene3D(char const* titleStr) {
   this->loadGeometry();
   this->initShaders();
 
-  cam.setFOV(M_PI / 2.0f);
-  cam.setAspectRatio(1.0f);
+  cam.setFOV((M_PI / 2.0f));
+  cam.setAspectRatio((float)width / height);
 
   balls = NULL;
   ballCount = 0;
