@@ -19,6 +19,7 @@ class Model {
   GLuint* indices;
   GLuint iCount;
 
+ private:
   GLuint vertexBufferObj;
   GLuint elementBufferObj;
 
@@ -34,31 +35,6 @@ class Model {
   Vec3 getVertex(GLuint index) const;
   GLuint getTriangleNum() const;
   void getTriangle(GLuint index, Vec3* a, Vec3* b, Vec3* c) const;
-};
-
-class SphereModel : public Model {
- protected:
-  int sphereResolution;
-  float R;
-
- public:
-  SphereModel(int resolution = 12, float radius = 1.0f);
-  ~SphereModel();
-  void setResolution(int newRes) { sphereResolution = newRes; }
-  void setRadius(float r) { R = r; }
-  void loadModel() override;
-  void renderStriped(GLint posAttrib, bool side = false) const;
-};
-
-class ObjModel : public Model {
- protected:
-  std::string fileName;
-
- public:
-  ObjModel(const char* fileName_ = "");
-  ~ObjModel();
-  void setFileName(const char* name) { fileName = name; };
-  void loadModel() override;
 };
 
 #endif

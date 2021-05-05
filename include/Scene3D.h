@@ -7,7 +7,9 @@
 #include "Camera.h"
 #include "Matrix.h"
 #include "Model.h"
+#include "ObjModel.h"
 #include "SDLInstance.h"
+#include "SphereModel.h"
 #include "Vec3.h"
 
 class Scene3D : public SDLInstance {
