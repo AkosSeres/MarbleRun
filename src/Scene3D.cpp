@@ -84,7 +84,7 @@ void Scene3D::mainLoop(Uint32 t) {
   if (spaceKey) cam.moveBy(Vec3(0.0f, 1.0f, 0.0f));
   if (shiftKey) cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
 
-  // Update the balls
+  // Update the balls if time is not frozen
   if (!timeStopped) {
     Vec3 gravity = Vec3(0, -100, 0);
     for (int i = 0; i < ballCount; i++) {
@@ -165,6 +165,9 @@ void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
       break;
     case SDLK_t:
       timeStopped = !timeStopped;
+      break;
+    case SDLK_p:
+      saveScene("saved.scene");
       break;
     default:
       break;
@@ -271,4 +274,15 @@ std::istream& operator>>(std::istream& is, Scene3D& scene) {
   scene.world.loadToGL();
 
   return is;
+}
+
+/**
+ * Saves the scene with the given file name.
+ */
+void Scene3D::saveScene(const char* fileName) const {
+  std::ofstream saveFile(fileName);
+  if (saveFile.is_open()) {
+    saveFile << (*this);
+    saveFile.close();
+  }
 }

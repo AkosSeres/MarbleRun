@@ -2,6 +2,7 @@
 #define _PHY3D_SCENE3D_H_
 
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -46,6 +47,7 @@ class Scene3D : public SDLInstance {
  public:
   Scene3D(char const* titleStr = NULL);
   ~Scene3D();
+  void saveScene(const char* fileName) const;
   friend std::ostream& operator<<(std::ostream& os, const Scene3D& scene);
   friend std::istream& operator>>(std::istream& is, Scene3D& scene);
 };
