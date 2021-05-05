@@ -7,7 +7,7 @@ find_package(OpenGL REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-configure_file(base_scene.obj base_scene.obj COPYONLY)
+configure_file(base_scene.obj base_scene.scene COPYONLY)
 
 add_executable(phy3d src/main.cpp)
 if(WIN32)

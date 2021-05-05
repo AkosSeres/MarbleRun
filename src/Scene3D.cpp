@@ -2,7 +2,7 @@
 
 Scene3D::Scene3D(char const* titleStr) {
   WASDKeys[0] = WASDKeys[1] = WASDKeys[2] = WASDKeys[3] = spaceKey = shiftKey =
-      false;
+      timeStopped = false;
   initWindow(titleStr);
   this->loadGeometry();
   this->initShaders();
@@ -25,10 +25,10 @@ void Scene3D::loadGeometry() {
   std::ifstream file;
   file.exceptions(std::ifstream::badbit);
   try {
-    file.open("base_scene.obj");
+    file.open("base_scene.scene");
     file >> (*this);
   } catch (const std::ifstream::failure& e) {
-    SDL_Log("Could not open and read file: base_scene.obj");
+    SDL_Log("Could not open and read file: base_scene.scene");
   }
   file.close();
 
@@ -85,10 +85,12 @@ void Scene3D::mainLoop(Uint32 t) {
   if (shiftKey) cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
 
   // Update the balls
-  Vec3 gravity = Vec3(0, -100, 0);
-  for (int i = 0; i < ballCount; i++) {
-    balls[i].update(1.0f / 60.0f, gravity);
-    balls[i].collideWithModel(world);
+  if (!timeStopped) {
+    Vec3 gravity = Vec3(0, -100, 0);
+    for (int i = 0; i < ballCount; i++) {
+      balls[i].update(1.0f / 60.0f, gravity);
+      balls[i].collideWithModel(world);
+    }
   }
 
   // Set matrices
@@ -160,6 +162,9 @@ void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
       break;
     case SDLK_LSHIFT:
       shiftKey = false;
+      break;
+    case SDLK_t:
+      timeStopped = !timeStopped;
       break;
     default:
       break;

@@ -34,6 +34,7 @@ class Scene3D : public SDLInstance {
   bool WASDKeys[4];
   bool spaceKey;
   bool shiftKey;
+  bool timeStopped;
   void keyDownEvent(const SDL_KeyboardEvent& e) override;
   void keyUpEvent(const SDL_KeyboardEvent& e) override;
   void mouseMotionEvent(const SDL_MouseMotionEvent& e) override;
