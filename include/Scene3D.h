@@ -2,6 +2,8 @@
 #define _PHY3D_SCENE3D_H_
 
 #include <cmath>
+#include <iostream>
+#include <sstream>
 
 #include "Ball.h"
 #include "Camera.h"
@@ -38,10 +40,13 @@ class Scene3D : public SDLInstance {
   void mouseButtonDownEvent(const SDL_MouseButtonEvent& e) override;
 
   void placeBall();
+  void addBall(const Ball& b);
 
  public:
   Scene3D(char const* titleStr = NULL);
   ~Scene3D();
+  friend std::ostream& operator<<(std::ostream& os, const Scene3D& scene);
+  friend std::istream& operator>>(std::istream& is, Scene3D& scene);
 };
 
 #endif

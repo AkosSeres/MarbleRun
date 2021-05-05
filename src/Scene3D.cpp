@@ -22,8 +22,16 @@ void Scene3D::loadGeometry() {
   content.loadModel();
   content.loadToGL();
 
-  world.setFileName("base_scene.obj");
-  world.loadModel();
+  std::ifstream file;
+  file.exceptions(std::ifstream::badbit);
+  try {
+    file.open("base_scene.obj");
+    file >> (*this);
+  } catch (const std::ifstream::failure& e) {
+    SDL_Log("Could not open and read file: base_scene.obj");
+  }
+  file.close();
+
   world.loadToGL();
 }
 
@@ -181,4 +189,81 @@ void Scene3D::placeBall() {
   balls[ballCount - 1].setRadius(5);
 }
 
+/**
+ * Appends a ball to the current ones present.
+ */
+void Scene3D::addBall(const Ball& b) {
+  Ball* newAddr = new Ball[ballCount + 1];
+  std::memcpy(newAddr, balls, sizeof(Ball) * ballCount);
+  ballCount++;
+  delete[] balls;
+  balls = newAddr;
+  balls[ballCount - 1] = b;
+}
+
 Scene3D::~Scene3D() { delete[] balls; }
+
+/**
+ * This function saves the state of the scene into an obj file (the plan is to
+ * save the balls' positions and other attributes in obj comments). It only
+ * stores the position and size of balls.
+ */
+std::ostream& operator<<(std::ostream& os, const Scene3D& scene) {
+  // Store balls
+  for (int i = 0; i < scene.ballCount; i++) {
+    Ball& b = scene.balls[i];
+    Vec3 pos = b.getPosition();
+    os << "#ball " << pos.x << ' ' << pos.y << ' ' << pos.z << ' '
+       << b.getRadius() << ' ' << b.getDensity() << ' '
+       << b.getAngularMassMultiplier() << ' ' << b.getBounciness() << ' '
+       << b.getFrictionCoefficient() << '\n';
+  }
+  os << "#end\n";
+
+  // Store vertices
+  auto vNum = scene.world.getVertexNum();
+  for (int i = 0; i < vNum; i++) {
+    auto v = scene.world.getVertex(i);
+    os << "v " << v.x << ' ' << v.y << ' ' << v.z << ' ' << "1.0\n";
+  }
+
+  // Store the triangle indices
+  auto tNum = scene.world.getTriangleNum();
+  for (int i = 0; i < tNum; i++) {
+    GLuint a, b, c;
+    scene.world.getTriangleIdx(i, &a, &b, &c);
+    os << "f " << (a + 1) << ' ' << (b + 1) << ' ' << (c + 1) << '\n';
+  }
+
+  return os;
+}
+
+/**
+ * Loads a scene from a file.
+ */
+std::istream& operator>>(std::istream& is, Scene3D& scene) {
+  std::string line;
+  // Load the balls in the scene described in the starting lines of the file
+  while (std::getline(is, line)) {
+    // If the line describes a ball, load it
+    if ((line.length() >= 6) && line[0] == '#' && line[1] == 'b' &&
+        line[2] == 'a' && line[3] == 'l' && line[4] == 'l' && line[5] == ' ') {
+      std::istringstream loader(line.substr(5));
+      float x, y, z, r, density, angularMMult, bounciness, fc;
+      loader >> x >> y >> z >> density >> angularMMult >> bounciness >> fc;
+      Ball newBall(Vec3(x, y, z), r);
+      newBall.setDensity(density);
+      newBall.setAngularMassMultiplier(angularMMult);
+      newBall.setBounciness(bounciness);
+      newBall.setFrictionCoefficient(fc);
+      scene.addBall(newBall);
+    } else
+      break;
+  }
+
+  // Then load the rest of the file as a basic obj
+  is >> scene.world;
+  scene.world.loadToGL();
+
+  return is;
+}

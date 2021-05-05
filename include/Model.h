@@ -35,6 +35,7 @@ class Model {
   Vec3 getVertex(GLuint index) const;
   GLuint getTriangleNum() const;
   void getTriangle(GLuint index, Vec3* a, Vec3* b, Vec3* c) const;
+  void getTriangleIdx(GLuint index, GLuint* a, GLuint* b, GLuint* c) const;
 };
 
 #endif

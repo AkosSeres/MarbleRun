@@ -30,10 +30,18 @@ class Ball {
   void setVel(const Vec3& v) { vel = v; }
   Vec3 getVel() { return vel; }
   void setDensity(float d) { density = d; };
+  float getDensity() const { return density; };
   void setRadius(float R) { r = R; }
+  float getRadius() const { return r; }
   void setBounciness(float k_);
+  float getBounciness() const { return k; };
   void setFrictionCoefficient(float fc_) { fc = std::abs(fc_); };
+  float getFrictionCoefficient() const { return fc; };
   inline float getAngularMass() const;
+  void setAngularMassMultiplier(float newAmm) {
+    angularMassMultiplier = std::abs(newAmm);
+  };
+  float getAngularMassMultiplier() const { return angularMassMultiplier; };
   void update(float dt, const Vec3& g = Vec3(0, 0, 0));
   Matrix getModelViewMatrix() const;
   Vec3 getVelInPos(const Vec3& p) const;

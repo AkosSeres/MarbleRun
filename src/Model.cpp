@@ -107,3 +107,13 @@ void Model::getTriangle(GLuint index, Vec3* a, Vec3* b, Vec3* c) const {
   (*b) = getVertex(indices[index * 3 + 1]);
   (*c) = getVertex(indices[index * 3 + 2]);
 }
+
+/**
+ * Loads the requested triangle's vertex indices into the pointers.
+ */
+void Model::getTriangleIdx(GLuint index, GLuint* a, GLuint* b,
+                           GLuint* c) const {
+  (*a) = (indices[index * 3]);
+  (*b) = (indices[index * 3 + 1]);
+  (*c) = (indices[index * 3 + 2]);
+}
