@@ -17,6 +17,7 @@ class ObjModel : public Model {
   ObjModel(const char* fileName_ = "") : Model(), fileName(fileName_){};
   void setFileName(const char* name) { fileName = name; };
   void loadModel() override;
+  friend std::istream& operator>>(std::istream& is, ObjModel&);
 };
 
 #endif
