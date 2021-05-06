@@ -40,6 +40,8 @@ class Scene3D : public SDLInstance {
   void keyUpEvent(const SDL_KeyboardEvent& e) override;
   void mouseMotionEvent(const SDL_MouseMotionEvent& e) override;
   void mouseButtonDownEvent(const SDL_MouseButtonEvent& e) override;
+  void resizeEvent(int width, int height) override;
+  void fileDropEvent(const char* fName) override;
 
   void placeBall();
   void addBall(const Ball& b);

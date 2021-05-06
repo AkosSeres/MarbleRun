@@ -38,9 +38,10 @@ class SDLInstance {
   virtual void keyDownEvent(const SDL_KeyboardEvent& e){};
   virtual void keyUpEvent(const SDL_KeyboardEvent& e){};
   virtual void mouseMotionEvent(const SDL_MouseMotionEvent& e){};
-  virtual void windowEvent(const SDL_WindowEvent& e){};
   virtual void mouseButtonDownEvent(const SDL_MouseButtonEvent& e){};
   virtual void mouseButtonUpEvent(const SDL_MouseButtonEvent& e){};
+  virtual void fileDropEvent(const char* fName){};
+  virtual void resizeEvent(int width, int height){};
 
  public:
   SDLInstance(char const* titleStr = NULL);

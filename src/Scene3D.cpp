@@ -183,6 +183,11 @@ void Scene3D::mouseButtonDownEvent(const SDL_MouseButtonEvent& e) {
   if (e.button == SDL_BUTTON_LEFT) placeBall();
 }
 
+void Scene3D::resizeEvent(int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
+void Scene3D::fileDropEvent(const char* fName) { SDL_Log("Dropp"); }
 /**
  * Shoots a ball out of the camera.
  */
