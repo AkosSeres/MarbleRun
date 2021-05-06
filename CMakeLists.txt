@@ -7,13 +7,13 @@ find_package(OpenGL REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-configure_file(base_scene.obj base_scene.scene COPYONLY)
+configure_file(base_scene.scene base_scene.scene COPYONLY)
 
-add_executable(phy3d src/main.cpp)
+add_executable(phy3d src/main.cpp src/Ball.cpp src/Camera.cpp src/Matrix.cpp src/Model.cpp src/ObjModel.cpp src/Scene3D.cpp src/SDLInstance.cpp src/Shaders.cpp src/SphereModel.cpp src/Vec3.cpp)
 if(WIN32)
     target_link_libraries(phy3d SDL2::SDL2-static ${SDL2_LIBRARIES})
 else()
     target_link_libraries(phy3d ${SDL2_LIBRARIES})
 endif()
 
-target_link_libraries(phy3d GL GLU)
+target_link_libraries(phy3d GLESv2)

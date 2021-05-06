@@ -46,11 +46,6 @@ void SDLInstance::initWindow(char const* titleStr, int w, int h) {
 }
 
 void SDLInstance::loadGeometry() {
-  // Init vertex array
-  GLuint vertexArr;
-  glGenVertexArraysOES(1, &vertexArr);
-  glBindVertexArrayOES(vertexArr);
-
   // Load the vertices into the vertex buffer
   GLuint vertexBufferObj;
   glGenBuffers(1, &vertexBufferObj);
