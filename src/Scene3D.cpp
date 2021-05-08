@@ -73,20 +73,20 @@ void Scene3D::initShaders() {
 
 void Scene3D::mainLoop(Uint32 t) {
   // Set background color (black)
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Rotate projection matrix when A or D is pressed
-  if (WASDKeys[1]) cam.moveBy(-cam.getRightDir());
-  if (WASDKeys[3]) cam.moveBy(cam.getRightDir());
-  if (WASDKeys[0]) cam.moveBy(cam.getForwardDir());
-  if (WASDKeys[2]) cam.moveBy(-cam.getForwardDir());
-  if (spaceKey) cam.moveBy(Vec3(0.0f, 1.0f, 0.0f));
-  if (shiftKey) cam.moveBy(Vec3(0.0f, -1.0f, 0.0f));
+  // Move camera when WASD or space or shift is pressed
+  if (WASDKeys[1]) cam.moveBy(-cam.getRightDir() * 1.8f);
+  if (WASDKeys[3]) cam.moveBy(cam.getRightDir() * 1.8f);
+  if (WASDKeys[0]) cam.moveBy(cam.getForwardDir() * 1.8f);
+  if (WASDKeys[2]) cam.moveBy(-cam.getForwardDir() * 1.8f);
+  if (spaceKey) cam.moveBy(Vec3(0.0f, 1.8f, 0.0f));
+  if (shiftKey) cam.moveBy(Vec3(0.0f, -1.8f, 0.0f));
 
   // Update the balls if time is not frozen
   if (!timeStopped) {
-    Vec3 gravity = Vec3(0, -100, 0);
+    Vec3 gravity = Vec3(0, -200, 0);
     for (int i = 0; i < ballCount; i++) {
       balls[i].update(1.0f / 60.0f, gravity);
       balls[i].collideWithModel(world);
@@ -95,7 +95,7 @@ void Scene3D::mainLoop(Uint32 t) {
 
   // Set matrices
   Matrix modelViewMatrix;
-  Matrix projMatrix = cam.getProjMatrix(0.5f, 350.0f);
+  Matrix projMatrix = cam.getProjMatrix(0.75f, 2000.0f);
   glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
   glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
 
@@ -138,6 +138,9 @@ void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
       break;
     case SDLK_LSHIFT:
       shiftKey = true;
+      break;
+    case SDLK_r:
+      clearBalls();
       break;
     default:
       break;
@@ -209,7 +212,7 @@ void Scene3D::placeBall() {
   Ball* newAddr = new Ball[ballCount + 1];
   std::memcpy(newAddr, balls, sizeof(Ball) * ballCount);
   ballCount++;
-  delete[] balls;
+  if (balls != NULL) delete[] balls;
   balls = newAddr;
   balls[ballCount - 1].setPosition(cam.getPos());
   balls[ballCount - 1].setVel(cam.getDir());
@@ -223,12 +226,21 @@ void Scene3D::addBall(const Ball& b) {
   Ball* newAddr = new Ball[ballCount + 1];
   std::memcpy(newAddr, balls, sizeof(Ball) * ballCount);
   ballCount++;
-  delete[] balls;
+  if (balls != NULL) delete[] balls;
   balls = newAddr;
   balls[ballCount - 1] = b;
 }
 
-Scene3D::~Scene3D() { delete[] balls; }
+/**
+ * Removes the balls from the scene and frees up memory.
+ */
+void Scene3D::clearBalls() {
+  if (balls != NULL) delete[] balls;
+  balls = NULL;
+  ballCount = 0;
+}
+
+Scene3D::~Scene3D() { clearBalls(); }
 
 /**
  * This function saves the state of the scene into an obj file (the plan is to
@@ -251,7 +263,7 @@ std::ostream& operator<<(std::ostream& os, const Scene3D& scene) {
   auto vNum = scene.world.getVertexNum();
   for (int i = 0; i < vNum; i++) {
     auto v = scene.world.getVertex(i);
-    os << "v " << v.x << ' ' << v.y << ' ' << v.z << ' ' << "1.0\n";
+    os << "v " << v.x << ' ' << v.y << ' ' << v.z << '\n';
   }
 
   // Store the triangle indices
@@ -270,8 +282,7 @@ std::ostream& operator<<(std::ostream& os, const Scene3D& scene) {
  */
 std::istream& operator>>(std::istream& is, Scene3D& scene) {
   std::string line;
-  delete[] scene.balls;
-  scene.ballCount = 0;
+  scene.clearBalls();
   // Load the balls in the scene described in the starting lines of the file
   while (std::getline(is, line)) {
     // If the line describes a ball, load it

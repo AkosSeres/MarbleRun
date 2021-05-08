@@ -45,6 +45,7 @@ class Scene3D : public SDLInstance {
 
   void placeBall();
   void addBall(const Ball& b);
+  void clearBalls();
 
  public:
   Scene3D(char const* titleStr = NULL);
