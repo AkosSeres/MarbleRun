@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        html,
+        body {
+            position: relative;
+            height: 100%;
+            overflow: hidden
+        }
+
+        body,
+        canvas {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <title>3D Physics sandbox</title>
+</head>
+
+<body>
+    <canvas class="emscripten" id="canvas"></canvas>
+    <script type='text/javascript'>
+        var Module = {
+            'wasmBinaryFile': 'index.wasm',
+            // Needed because of emscripten_set_main_loop_arg
+            'noExitRuntime': true,
+            'canvas': (function () {
+                let canvas = document.getElementById('canvas');
+                canvas.addEventListener('webglcontextlost', function (e) {
+                    alert('WebGL context lost. You will need to reload the page.');
+                    e.preventDefault();
+                }, false);
+                return canvas;
+            })(),
+            'print': function (msg) {
+                console.log(msg);
+            },
+            'printErr': function (msg) {
+                console.error(msg);
+            },
+            'preRun': [() => {
+                window.onresize = document.onload = () => {
+                    let canvas = document.getElementById('canvas');
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    canvas.style.width = window.innerWidth + 'px';
+                    canvas.style.height = window.innerHeight + 'px';
+                    let ff = this.cwrap('SDLEv_browserWasResized', 'number', []);
+                    ff();
+                }
+
+                const fileDropped = async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    let fileToLoad = event.dataTransfer.files[0];
+                    let contents = await fileToLoad.text();
+                    let name = fileToLoad.name;
+                    FS.writeFile(name, contents);
+                    contents = FS.readFile(name, { encoding: 'utf8' });
+
+                    this.ccall('SDLEv_dropEventForSDL', 'number', ['string'], [name]);
+                }
+
+                document.body.addEventListener('dragover', (e) => { e.preventDefault(); });
+                document.body.addEventListener('drop', fileDropped);
+            }]
+        }
+    </script>
+    <script async type="text/javascript" src="index.js"></script>
+</body>
+
+</html>
+
