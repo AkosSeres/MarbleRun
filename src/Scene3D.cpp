@@ -89,6 +89,9 @@ void Scene3D::mainLoop(Uint32 t) {
     Vec3 gravity = Vec3(0, -200, 0);
     for (int i = 0; i < ballCount; i++) {
       balls[i].update(1.0f / 60.0f, gravity);
+      // Ball-ball collisions
+      for (int j = i + 1; j < ballCount; j++) Ball::collide(balls[i], balls[j]);
+      // Ball-world collisions
       balls[i].collideWithModel(world);
     }
   }

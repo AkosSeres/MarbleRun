@@ -155,3 +155,63 @@ void Ball::collideWithModel(const Model& m) {
     }
   }
 }
+
+/**
+ * Tests the collision between two balls and applies response if needed.
+ */
+void Ball::collide(Ball& b1, Ball& b2) {
+  float R = b1.r + b2.r;
+  // Return if they do not
+  if ((R * R) < (b1.pos - b2.pos).lenSq()) return;
+  // Separate the balls
+  float m1 = b1.getMass(), m2 = b2.getMass();
+  float am1 = b1.getAngularMass(), am2 = b2.getAngularMass();
+  Vec3 d = b2.pos - b1.pos;
+  d.setLen(R - d.len());
+  b2.pos.add(Vec3::mult(d, m1 / (m1 + m2)));
+  b1.pos.add(Vec3::mult(d, -m2 / (m1 + m2)));
+
+  // Do not do anything if they are moving away from each other
+  Vec3& n = d.setLen(1.0f);
+  float v1 = n.dot(b1.vel), v2 = n.dot(b2.vel);
+  if (v2 >= v1) return;
+
+  // Calculate collision response
+  Vec3 p = b1.pos + (n * b1.r);
+  Vec3 vRel1 = b1.getVelInPos(p);
+  Vec3 vRel2 = b2.getVelInPos(p);
+  Vec3 vRel = vRel2 - vRel1;
+  float k = (b1.k + b2.k) * 0.5f;
+  Vec3 r1 = p - b1.pos, r2 = p - b2.pos;
+  float dImp = Vec3::cross(r1, n).cross(r1).mult(1.0f / am1).dot(n);
+  dImp += Vec3::cross(r2, n).cross(r2).mult(1.0f / am2).dot(n);
+  dImp += (1.0f / m1);
+  dImp += (1.0f / m2);
+  dImp = 1.0f / dImp;
+  dImp *= (-(1 + k) * Vec3::dot(vRel, n));
+
+  // Modify their velocities accordingly
+  b1.vel.sub(Vec3::mult(n, dImp / m1));
+  b2.vel.add(Vec3::mult(n, dImp / m2));
+
+  // Deal with friction
+  float fc = std::sqrt(b1.fc * b2.fc);
+  Vec3 t = Vec3::sub(vRel, n * vRel.dot(n)).setLen(1.0f);
+  float amEff1 = am1 / (b1.r * b1.r);
+  float amEff2 = am2 / (b2.r * b2.r);
+  float effMass1 = 1.0f / ((1.0f / m1) + (1.0f / amEff1));
+  float effMass2 = 1.0f / ((1.0f / m2) + (1.0f / amEff2));
+  float effMass = 1.0f / ((1.0f / effMass1) + (1.0f / effMass2));
+  float dResp = fc * dImp;
+  Vec3 fResp;
+  if (std::abs(vRel.dot(t) * effMass) <= std::abs(dImp)) {
+    fResp = Vec3::mult(t, -vRel.dot(t) * effMass);
+  } else
+    fResp = Vec3::mult(t, -dImp);
+
+  // Modify the velocities accordig to the friction impulse
+  b1.vel.sub(Vec3::mult(fResp, 1.0f / m1));
+  b2.vel.add(Vec3::mult(fResp, 1.0f / m2));
+  b1.angVel.sub(r1.cross(fResp) * (1.0f / am1));
+  b2.angVel.add(r2.cross(fResp) * (1.0f / am2));
+}

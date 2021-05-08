@@ -46,6 +46,8 @@ class Ball {
   Matrix getModelViewMatrix() const;
   Vec3 getVelInPos(const Vec3& p) const;
   void collideWithModel(const Model& m);
+
+  static void collide(Ball& b1, Ball& b2);
 };
 
 #endif
