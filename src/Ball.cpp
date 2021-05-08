@@ -106,19 +106,23 @@ void Ball::collideWithModel(const Model& m) {
     Vec3 dv = n * (vel.dot(n)) * (1 + k);
     vel.sub(dv);
 
+    // return;
     Vec3 cp = v;
     Vec3 vRel = -getVelInPos(cp);
     Vec3 t = Vec3::sub(vRel, Vec3::mult(n, n.dot(vRel)));
     t.setLen(1);
-    float dImp = -dv.len() * getMass() * fc;
+    float mass = getMass();
+    float angularEffMass = getAngularMass() / (r * r);
+    float effMass = 1.0f / ((1.0f / mass) + (1.0f / angularEffMass));
+    float dImp = -dv.len() * mass * fc;
     Vec3 fResp;
-    if (vRel.dot(t) * getMass() <= dImp) {
-      fResp = Vec3::mult(t, -vRel.dot(t) * getMass());
+    if (std::abs(vRel.dot(t) * effMass) <= std::abs(dImp)) {
+      fResp = Vec3::mult(t, vRel.dot(t) * effMass);
     } else
       fResp = Vec3::mult(t, -dImp);
 
     d = Vec3::sub(cp, pos);
-    vel.add(Vec3::mult(fResp, 1 / getMass()));
+    vel.add(Vec3::mult(fResp, 1.0f / mass));
     angVel.add(Vec3::mult(d.cross(fResp), 1 / getAngularMass()));
   };
 

@@ -217,6 +217,8 @@ void Scene3D::placeBall() {
   balls[ballCount - 1].setPosition(cam.getPos());
   balls[ballCount - 1].setVel(cam.getDir());
   balls[ballCount - 1].setRadius(5);
+  balls[ballCount - 1].setBounciness(0.15f);
+  balls[ballCount - 1].setFrictionCoefficient(0.3f);
 }
 
 /**
