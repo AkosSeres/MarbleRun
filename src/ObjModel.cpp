@@ -23,6 +23,8 @@ void ObjModel::loadModel() {
 std::istream& operator>>(std::istream& is, ObjModel& model) {
   auto& vertices = model.vertices;
   auto& indices = model.indices;
+  delete[] vertices;
+  delete[] indices;
   std::string line;
   GLuint vAlloc = 512;
   GLuint iAlloc = 512;

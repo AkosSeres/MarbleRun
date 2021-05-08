@@ -25,10 +25,10 @@ void Scene3D::loadGeometry() {
   std::ifstream file;
   file.exceptions(std::ifstream::badbit);
   try {
-    file.open("base_scene.scene");
+    file.open("base.scene");
     file >> (*this);
   } catch (const std::ifstream::failure& e) {
-    SDL_Log("Could not open and read file: base_scene.scene");
+    SDL_Log("Could not open and read file: base.scene");
   }
   file.close();
 
@@ -187,7 +187,21 @@ void Scene3D::resizeEvent(int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-void Scene3D::fileDropEvent(const char* fName) { SDL_Log("Dropp"); }
+void Scene3D::fileDropEvent(const char* fName) {
+  SDL_Log("Loading file %s", fName);
+  std::ifstream file;
+  file.exceptions(std::ifstream::badbit);
+  try {
+    file.open(fName);
+    file >> (*this);
+  } catch (const std::ifstream::failure& e) {
+    SDL_Log("Could not open and read file: %s", fName);
+  }
+  file.close();
+
+  world.loadToGL();
+}
+
 /**
  * Shoots a ball out of the camera.
  */
@@ -256,6 +270,8 @@ std::ostream& operator<<(std::ostream& os, const Scene3D& scene) {
  */
 std::istream& operator>>(std::istream& is, Scene3D& scene) {
   std::string line;
+  delete[] scene.balls;
+  scene.ballCount = 0;
   // Load the balls in the scene described in the starting lines of the file
   while (std::getline(is, line)) {
     // If the line describes a ball, load it
