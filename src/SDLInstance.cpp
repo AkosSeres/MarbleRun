@@ -1,5 +1,17 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #include "SDLInstance.h"
 
+/**
+ * Creates and initalises the application. Creates the window, loads the
+ * geometry and the shaders used for rendering.
+ */
 SDLInstance::SDLInstance(char const* titleStr) {
   initWindow(titleStr);
   this->loadGeometry();
@@ -7,15 +19,32 @@ SDLInstance::SDLInstance(char const* titleStr) {
 }
 
 #ifdef __EMSCRIPTEN__
+/**
+ * Functions for retrieving the dimensions of the browser window when running in
+ * the browser.
+ */
 namespace WidthGetter {
 EM_JS(int, getBrowserWidth, (), { return window.innerWidth; });
 EM_JS(int, getBrowserHeight, (), { return window.innerHeight; });
 }  // namespace WidthGetter
+
+/**
+ * Returns the width and height of the browser window.
+ */
+void SDLInstance::getBrowserDimensions(int* width, int* height) {
+  (*width) = WidthGetter::getBrowserWidth();
+  (*height) = WidthGetter::getBrowserHeight();
+}
 #endif
 
+/**
+ * Creates the SDL window with the given title and size.
+ */
 void SDLInstance::initWindow(char const* titleStr, int w, int h) {
+  // Use an empty string if title is not given.
   if (titleStr == NULL) titleStr = "";
 
+// Set width and height to the browser's size when running in browser
 #ifdef __EMSCRIPTEN__
   w = WidthGetter::getBrowserWidth();
   h = WidthGetter::getBrowserHeight();
@@ -45,6 +74,9 @@ void SDLInstance::initWindow(char const* titleStr, int w, int h) {
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 }
 
+/**
+ * This function has to load the geomerty for rendering later.
+ */
 void SDLInstance::loadGeometry() {
   // Load the vertices into the vertex buffer
   GLuint vertexBufferObj;
@@ -53,6 +85,8 @@ void SDLInstance::loadGeometry() {
   GLfloat vertices[] = {0.0f,  0.5f,  0.5f, 0.0f, 0.0f,
                         -0.5f, -0.5f, 0.0f, 0.0f, 0.5f};
 
+  // The class does not use other geomerty so the buffer only has to be binded
+  // once
   glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObj);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 }
@@ -97,6 +131,9 @@ void mainLoop() { mainLoopFunc(); };
 }  // namespace LoopCaller
 #endif
 
+/**
+ * Calling this funcion makes the app enter the main loop.
+ */
 void SDLInstance::enterLoop() {
   isRunning = true;
 
@@ -119,10 +156,15 @@ void SDLInstance::enterLoop() {
   emscripten_set_main_loop(LoopCaller::mainLoop, 0, true);
 #else
   // In native mode just use a while loop
-  while (isRunning) loopFunc();
+  while (isRunning) {
+    loopFunc();
+  }
 #endif
 }
 
+/**
+ * This function gets called in every loop
+ */
 void SDLInstance::mainLoop(Uint32 t) {
   // Give the time to the shader
   glUniform1f(timeLocation, (float)t);
@@ -136,6 +178,10 @@ void SDLInstance::mainLoop(Uint32 t) {
   glDrawArrays(GL_TRIANGLES, 2, 3);
 }
 
+/**
+ * This function handles the incoming events and calls the right virtual
+ * function for the given event.
+ */
 void SDLInstance::handleEvents() {
   SDL_Event e;
   while (SDL_PollEvent(&e)) {
@@ -160,6 +206,7 @@ void SDLInstance::handleEvents() {
         break;
       case SDL_DROPFILE:
         fileDropEvent(e.drop.file);
+        // Free up the memory of the file name string
         SDL_free(e.drop.file);
         break;
       case SDL_WINDOWEVENT:

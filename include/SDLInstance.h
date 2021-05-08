@@ -1,3 +1,11 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #ifndef _PHY3D_SDLINSTANCE_H_
 #define _PHY3D_SDLINSTANCE_H_
 
@@ -42,6 +50,10 @@ class SDLInstance {
   virtual void mouseButtonUpEvent(const SDL_MouseButtonEvent& e){};
   virtual void fileDropEvent(const char* fName){};
   virtual void resizeEvent(int width, int height){};
+
+#ifdef __EMSCRIPTEN__
+  static void getBrowserDimensions(int* width, int* height);
+#endif
 
  public:
   SDLInstance(char const* titleStr = NULL);

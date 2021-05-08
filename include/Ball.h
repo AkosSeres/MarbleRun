@@ -1,3 +1,11 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #ifndef _PHY3D_BALL_H_
 #define _PHY3D_BALL_H_
 
@@ -9,17 +17,22 @@
 
 enum BallType { OPAQUE_BALL, SHELL_BALL };
 
+/**
+ * Class that describes a ball that can move and collide with static geometry
+ * and other balls.
+ */
 class Ball {
  private:
-  Vec3 pos;
-  Vec3 vel;
-  Matrix orientation;
-  Vec3 angVel;
-  float r;
-  float density;
-  float angularMassMultiplier;
-  float k;   // Coefficent of restitution
-  float fc;  // Frction coefficient
+  Vec3 pos;            // The position of the ball
+  Vec3 vel;            // The velocity of the ball
+  Matrix orientation;  // The orientation of the ball stored as a matrix
+  Vec3 angVel;         // The angular velocity of the ball (vector value)
+  float r;             // The radius of the ball
+  float density;       // The density of the ball
+  float
+      angularMassMultiplier;  // This describes the inner structure of the ball
+  float k;                    // Coefficent of restitution
+  float fc;                   // Frction coefficient
 
  public:
   Ball(const Vec3& pos_ = Vec3(0, 0, 0), float radius = 1);

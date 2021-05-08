@@ -1,3 +1,11 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #include "Matrix.h"
 
 /**
@@ -14,6 +22,7 @@ Matrix::Matrix() {
  */
 void Matrix::mult(const Matrix& other) {
   float temp[16];
+  // Use standard matrix multiplication
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
       temp[4 * i + j] = m[j] * other.m[4 * i] + m[4 + j] * other.m[4 * i + 1] +
@@ -71,7 +80,7 @@ Matrix& Matrix::operator*=(const float scalar) {
 
 /**
  * Returns a matrix with a scaling transformation with the same scaling factor
- * along all the axes
+ * along all the axes.
  */
 Matrix Matrix::scaling(float factor) {
   Matrix ret;
@@ -91,10 +100,11 @@ Matrix Matrix::scaling(float factorX, float factorY, float factorZ) {
 }
 
 /**
- * Returns a translation transformation matrix with the given offsets
+ * Returns a translation transformation matrix with the given offsets.
  */
 Matrix Matrix::translation(float x, float y, float z) {
   Matrix ret;
+  // With 4D matrices translations can be described with homogeneous coordinates
   ret.m[12] = x;
   ret.m[13] = y;
   ret.m[14] = z;
@@ -102,7 +112,8 @@ Matrix Matrix::translation(float x, float y, float z) {
 }
 
 /**
- * Returns a rotation transformation matrix around the x axis by the given angle
+ * Returns a rotation transformation matrix around the x axis by the given
+ * angle.
  */
 Matrix Matrix::rotationX(float angle) {
   Matrix ret;
@@ -116,7 +127,8 @@ Matrix Matrix::rotationX(float angle) {
 }
 
 /**
- * Returns a rotation transformation matrix around the y axis by the given angle
+ * Returns a rotation transformation matrix around the y axis by the given
+ * angle.
  */
 Matrix Matrix::rotationY(float angle) {
   Matrix ret;
@@ -130,7 +142,8 @@ Matrix Matrix::rotationY(float angle) {
 }
 
 /**
- * Returns a rotation transformation matrix around the z axis by the given angle
+ * Returns a rotation transformation matrix around the z axis by the given
+ * angle.
  */
 Matrix Matrix::rotationZ(float angle) {
   Matrix ret;
@@ -145,13 +158,14 @@ Matrix Matrix::rotationZ(float angle) {
 
 /**
  * Returns a rotation transformation matrix around the given axis by the given
- * angle
+ * angle. (The axis has to be a unit vector.)
  */
 Matrix Matrix::rotation(float angle, float ux, float uy, float uz) {
   Matrix ret;
   float cosa = std::cos(angle);
   float sina = std::sin(angle);
   float mcosa = 1.0f - cosa;
+  // Rotation around an arbitrary axis
   ret.m[0] = cosa + ux * ux * mcosa;
   ret.m[1] = uy * ux * mcosa + uz * sina;
   ret.m[2] = uz * ux * mcosa - uy * sina;
@@ -164,6 +178,12 @@ Matrix Matrix::rotation(float angle, float ux, float uy, float uz) {
   return ret;
 }
 
+/**
+ * Returns a frustum vector witht the given parameters. Used when constructing
+ * the perspective projection matrix. (Implemented with help from
+ * here:
+ * https://arm-software.github.io/opengl-es-sdk-for-android/simple_cube.html)
+ */
 Matrix Matrix::frustum(float left, float right, float bottom, float top,
                        float zNear, float zFar) {
   float temp, xDist, yDist, zDist;
@@ -183,6 +203,9 @@ Matrix Matrix::frustum(float left, float right, float bottom, float top,
   return ret;
 }
 
+/**
+ * Returns a perspective projection matrix with the given properties.
+ */
 Matrix Matrix::perspective(float fov, float aspectRatio, float zNear,
                            float zFar) {
   float ymax, xmax;

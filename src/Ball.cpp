@@ -1,9 +1,18 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #include "Ball.h"
 
 /**
  * Initalises a ball.
  */
 Ball::Ball(const Vec3& pos_, float radius) {
+  // Set base default properties
   pos = pos_;
   r = radius;
   vel = Vec3(0, 0, 0);
@@ -12,12 +21,14 @@ Ball::Ball(const Vec3& pos_, float radius) {
   density = 1;
   // By default set the ball as an opaque sphere
   setType(OPAQUE_BALL);
+  // The friction coefficient and bounciness can be modified with setters later
   k = 0.2;
   fc = 0.2;
 }
 
 /**
- * Sets the type of the ball - is it a full or hollow sphere?
+ * Sets the type of the ball - is it a full or hollow sphere? The two types
+ * differ in their angular masses.
  */
 void Ball::setType(BallType newType) {
   switch (newType) {
@@ -34,9 +45,11 @@ void Ball::setType(BallType newType) {
 }
 
 /**
- * Sets the coefficient of restitution of the ball.
+ * Sets the coefficient of restitution of the ball (bounciness). Has to be
+ * between 0 and 1.
  */
 void Ball::setBounciness(float k_) {
+  // Cannot be smaller than zero
   if (k_ < 0.0f)
     k = 0.0f;
   else if (k > 1.0f)
@@ -54,16 +67,19 @@ inline float Ball::getAngularMass() const {
 
 /**
  * Updates the ball by the given elapsed time. It moves and rotates it
- * accordingly to its velocities and the given gravity. I will maybe implement
- * something like air drag later.
+ * accordingly to its velocities and the given gravity.
  */
 void Ball::update(float dt, const Vec3& g) {
   Vec3 dx = Vec3::mult(vel, dt);
+  // Move the ball
   pos = pos + dx;
   Vec3 dv = Vec3::mult(g, dt);
+  // Apply gravity
   vel += dv;
   Vec3 rotAx = angVel;
   rotAx.setLen(1.0f);
+  // Rotate the ball by applying a rotation transformation on it's orientation
+  // matrix
   orientation.applyTransformation(
       Matrix::rotation(angVel.len() * dt, rotAx.x, rotAx.y, rotAx.z));
 }
@@ -93,6 +109,8 @@ Vec3 Ball::getVelInPos(const Vec3& p) const {
  * collision response.
  */
 void Ball::collideWithModel(const Model& m) {
+  // If the ball overlaps with the geomerty of the model, this lambda function
+  // is called to apply the collision response
   auto collideWithPoint = [&](const Vec3& v) {
     Vec3 d = Vec3::sub(v, pos);
     if (d.lenSq() > (r * r)) return;
@@ -106,31 +124,39 @@ void Ball::collideWithModel(const Model& m) {
     Vec3 dv = n * (vel.dot(n)) * (1 + k);
     vel.sub(dv);
 
-    // return;
+    // Collision point
     Vec3 cp = v;
-    Vec3 vRel = -getVelInPos(cp);
-    Vec3 t = Vec3::sub(vRel, Vec3::mult(n, n.dot(vRel)));
+    Vec3 vRel = -getVelInPos(
+        cp);  // The ball's relative velocity compared to the collision point
+    Vec3 t =
+        Vec3::sub(vRel, Vec3::mult(n, n.dot(vRel)));  // The collision tangent
     t.setLen(1);
     float mass = getMass();
     float angularEffMass = getAngularMass() / (r * r);
     float effMass = 1.0f / ((1.0f / mass) + (1.0f / angularEffMass));
     float dImp = -dv.len() * mass * fc;
     Vec3 fResp;
+    // If the friction response is too big (it would send the ball in the
+    // opposite direction), give it the max possible value
     if (std::abs(vRel.dot(t) * effMass) <= std::abs(dImp)) {
       fResp = Vec3::mult(t, vRel.dot(t) * effMass);
     } else
       fResp = Vec3::mult(t, -dImp);
 
+    // Change the velocity and angular velocity according to the friction
+    // impulse
     d = Vec3::sub(cp, pos);
     vel.add(Vec3::mult(fResp, 1.0f / mass));
     angVel.add(Vec3::mult(d.cross(fResp), 1 / getAngularMass()));
   };
 
+  // Test against the vertices of the model first
   GLuint vNum = m.getVertexNum();
   for (int i = 0; i < vNum; i++) {
     collideWithPoint(m.getVertex(i));
   }
 
+  // Then test against the triangles in the model
   GLuint tNum = m.getTriangleNum();
   for (int i = 0; i < tNum; i++) {
     Vec3 a, b, c;
@@ -146,6 +172,8 @@ void Ball::collideWithModel(const Model& m) {
     Vec3 aPerp = n.cross(AB);
     Vec3 bPerp = n.cross(BC);
     Vec3 cPerp = n.cross(CA);
+    // If the projection of the ball's position is inside the triangle's area,
+    // the ball might collide with it
     if (Vec3::dot(aRel, aPerp) >= 0 && Vec3::dot(bRel, bPerp) >= 0 &&
         Vec3::dot(cRel, cPerp) >= 0) {
       n.setLen(1);
@@ -154,6 +182,10 @@ void Ball::collideWithModel(const Model& m) {
       collideWithPoint(cp);
     }
   }
+
+  // I haven't yet implemented edge collision detection, but the algorithm is
+  // slow enough already and the collsions look realistic so I probably won't
+  // implement it since it is not worth it
 }
 
 /**
@@ -161,7 +193,7 @@ void Ball::collideWithModel(const Model& m) {
  */
 void Ball::collide(Ball& b1, Ball& b2) {
   float R = b1.r + b2.r;
-  // Return if they do not
+  // Return if they do not overlap
   if ((R * R) < (b1.pos - b2.pos).lenSq()) return;
   // Separate the balls
   float m1 = b1.getMass(), m2 = b2.getMass();
@@ -204,6 +236,9 @@ void Ball::collide(Ball& b1, Ball& b2) {
   float effMass = 1.0f / ((1.0f / effMass1) + (1.0f / effMass2));
   float dResp = fc * dImp;
   Vec3 fResp;
+  // This is pretty much the same deal as seen with static collisions: if the
+  // friciton response is too large, use the maximum value that would give them
+  // the same velocity in a collision
   if (std::abs(vRel.dot(t) * effMass) <= std::abs(dImp)) {
     fResp = Vec3::mult(t, -vRel.dot(t) * effMass);
   } else

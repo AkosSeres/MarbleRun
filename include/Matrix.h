@@ -1,3 +1,11 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #ifndef _PHY3D_MATRIX_H_
 #define _PHY3D_MATRIX_H_
 
@@ -7,10 +15,12 @@
  * 4x4 matrix class implemented to be used with OpenGL.
  */
 class Matrix {
+ private:
+  float m[16];
+
  public:
-  float m[16];  // The values are public because they are expected to be
-                // modified from outside the class in certain cases
   Matrix();
+  const float* getElements() const { return m; }
   void mult(const Matrix& other);
   static Matrix mult(const Matrix& a, const Matrix& b);
   Matrix operator*(const Matrix& other) const;
@@ -29,9 +39,9 @@ class Matrix {
   static Matrix rotationZ(float angle);
   static Matrix rotation(float angle, float ux, float uy, float uz);
   static Matrix frustum(float left, float right, float bottom, float top,
-                         float zNear, float zFar);
+                        float zNear, float zFar);
   static Matrix perspective(float fov, float aspectRatio, float zNear,
-                             float zFar);
+                            float zFar);
 };
 
 #endif

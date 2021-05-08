@@ -1,22 +1,56 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #include "Scene3D.h"
 
+/**
+ * Initalises the application.
+ * Cerates the window, loads the base scene and the shaders used for rendering.
+ */
 Scene3D::Scene3D(char const* titleStr) {
+  // The variables indicating some button states
   WASDKeys[0] = WASDKeys[1] = WASDKeys[2] = WASDKeys[3] = spaceKey = shiftKey =
       timeStopped = false;
   initWindow(titleStr);
   this->loadGeometry();
   this->initShaders();
 
-  cam.setFOV((M_PI / 2.0f));
+  // Set the field of view of the camera as well as the aspect ratio
+  cam.setFOV((M_PI / 1.75f));
   cam.setAspectRatio((float)width / height);
 
+  // Initially there are zero balls in the system
   balls = NULL;
   ballCount = 0;
 
+  // Set mouse capturing
   if (!SDL_GetRelativeMouseMode()) SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
+/**
+ * The destructor frees the memory reserved for storing the balls in the system
+ * and the shaders.
+ */
+Scene3D::~Scene3D() {
+  // Delete balls from memory
+  clearBalls();
+  // Remove shaders from memory
+  glDeleteShader(vertexShader);
+  glDeleteShader(pixelShader);
+  glDeleteProgram(shaderProgram);
+}
+
+/**
+ * Loads the geometry into memory. Generates the sphere that will be used when
+ * rendering the balls and loads the base scene from the scene file.
+ */
 void Scene3D::loadGeometry() {
+  // Generate the ball model to be used and load it into GPU memory
   content.setRadius(1.0f);
   content.setResolution(18);
   content.loadModel();
@@ -25,6 +59,7 @@ void Scene3D::loadGeometry() {
   std::ifstream file;
   file.exceptions(std::ifstream::badbit);
   try {
+    // Load the file with the overloaded operator
     file.open("base.scene");
     file >> (*this);
   } catch (const std::ifstream::failure& e) {
@@ -32,9 +67,13 @@ void Scene3D::loadGeometry() {
   }
   file.close();
 
+  // Load the scene geometry into GPU memory
   world.loadToGL();
 }
 
+/**
+ * Loads shaders and links them into a program.
+ */
 void Scene3D::initShaders() {
   // Load vertex shader
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -62,9 +101,8 @@ void Scene3D::initShaders() {
 
   // Tell OpenGL the format of the vertices
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  // glEnableVertexAttribArray(posAttrib);
 
-  // Enable Z-buffering
+  // Enable Z-buffering and Z-buffer fill offset for better wireframe visibility
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(0.0f, 1.0f);
   glEnable(GL_DEPTH_TEST);
@@ -99,20 +137,24 @@ void Scene3D::mainLoop(Uint32 t) {
   // Set matrices
   Matrix modelViewMatrix;
   Matrix projMatrix = cam.getProjMatrix(0.75f, 2000.0f);
-  glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &(projMatrix.m[0]));
-  glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
+  glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, projMatrix.getElements());
+  glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE,
+                     modelViewMatrix.getElements());
 
   // Render the world
-  glUniform4f(colorLocation, 0.05f, 0.05f, 0.2f, 1.0f);
-  world.renderOneByOne(posAttrib, GL_LINE_LOOP);
+  // Normal rendering
   glUniform4f(colorLocation, 0.75f, 0.75f, 0.75f, 1.0f);
   world.render(posAttrib);
+  // Wireframe rendering
+  glUniform4f(colorLocation, 0.05f, 0.05f, 0.2f, 1.0f);
+  world.renderOneByOne(posAttrib, GL_LINE_LOOP);
 
   // Render the balls
   for (int i = 0; i < ballCount; i++) {
     // Set the transform of the ball
     modelViewMatrix = balls[i].getModelViewMatrix();
-    glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE, &(modelViewMatrix.m[0]));
+    glUniformMatrix4fv(modelViewLocation, 1, GL_FALSE,
+                       modelViewMatrix.getElements());
 
     // Render the sphere looking like a beach ball
     glUniform4f(colorLocation, 0.75f, 0.12f, 0.12f, 1.0f);
@@ -122,8 +164,12 @@ void Scene3D::mainLoop(Uint32 t) {
   }
 }
 
+/**
+ * Handles keyboard button down events.
+ */
 void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
   switch (e.keysym.sym) {
+    // Set the correspontding boolean values true
     case SDLK_w:
       WASDKeys[0] = true;
       break;
@@ -143,14 +189,20 @@ void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
       shiftKey = true;
       break;
     case SDLK_r:
+      // Clears the ball array when pressing R
       clearBalls();
       break;
     default:
       break;
   }
 }
+
+/**
+ * Handles keyboard button release events.
+ */
 void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
   switch (e.keysym.sym) {
+      // Set the correspontding boolean values false
     case SDLK_w:
       WASDKeys[0] = false;
       break;
@@ -170,9 +222,11 @@ void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
       shiftKey = false;
       break;
     case SDLK_t:
+      // Stop the time when pressing T
       timeStopped = !timeStopped;
       break;
     case SDLK_p:
+      // Save the scene into a file when pressing P
       saveScene("saved.scene");
       break;
     default:
@@ -180,24 +234,48 @@ void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
   }
 }
 
+/**
+ * Handles mouse motion, rotates the camera accordingly.
+ */
 void Scene3D::mouseMotionEvent(const SDL_MouseMotionEvent& e) {
   cam.tiltUp(-(float)e.yrel / 1500.0f);
   cam.turnRight((float)e.xrel / 1500.0f);
 }
 
+/**
+ * Handles the mouse button press event, places a ball on the left mouse button
+ * press.
+ */
 void Scene3D::mouseButtonDownEvent(const SDL_MouseButtonEvent& e) {
   if (e.button == SDL_BUTTON_LEFT) placeBall();
 }
 
+/**
+ * Handles the window resize event.
+ */
 void Scene3D::resizeEvent(int width, int height) {
-  glViewport(0, 0, width, height);
+  // If running in the browser, get the new width and height from JS
+#ifdef __EMSCRIPTEN__
+  int w, h;
+  SDLInstance::getBrowserDimensions(&w, &h);
+#else
+  int w = width;
+  int h = height;
+#endif
+  // Set the new render target size and the new aspect ratio of the camera
+  glViewport(0, 0, w, h);
+  cam.setAspectRatio((float)w / h);
 }
 
+/**
+ * Handles the file drag and drop event.
+ */
 void Scene3D::fileDropEvent(const char* fName) {
   SDL_Log("Loading file %s", fName);
   std::ifstream file;
   file.exceptions(std::ifstream::badbit);
   try {
+    // Load the file containing a scene with the overloaded operator
     file.open(fName);
     file >> (*this);
   } catch (const std::ifstream::failure& e) {
@@ -205,6 +283,7 @@ void Scene3D::fileDropEvent(const char* fName) {
   }
   file.close();
 
+  // Load the newly read geometry to GPU memory
   world.loadToGL();
 }
 
@@ -217,6 +296,7 @@ void Scene3D::placeBall() {
   ballCount++;
   if (balls != NULL) delete[] balls;
   balls = newAddr;
+  // Set the default settings for the new ball
   balls[ballCount - 1].setPosition(cam.getPos());
   balls[ballCount - 1].setVel(cam.getDir());
   balls[ballCount - 1].setRadius(5);
@@ -237,15 +317,13 @@ void Scene3D::addBall(const Ball& b) {
 }
 
 /**
- * Removes the balls from the scene and frees up memory.
+ * Removes the balls from the scene and frees up allocated memory.
  */
 void Scene3D::clearBalls() {
   if (balls != NULL) delete[] balls;
   balls = NULL;
   ballCount = 0;
 }
-
-Scene3D::~Scene3D() { clearBalls(); }
 
 /**
  * This function saves the state of the scene into an obj file (the plan is to
@@ -262,6 +340,7 @@ std::ostream& operator<<(std::ostream& os, const Scene3D& scene) {
        << b.getAngularMassMultiplier() << ' ' << b.getBounciness() << ' '
        << b.getFrictionCoefficient() << '\n';
   }
+  // Indicate that there are no more balls to be read
   os << "#end\n";
 
   // Store vertices
@@ -276,6 +355,7 @@ std::ostream& operator<<(std::ostream& os, const Scene3D& scene) {
   for (int i = 0; i < tNum; i++) {
     GLuint a, b, c;
     scene.world.getTriangleIdx(i, &a, &b, &c);
+    // Important that obj indexing starts from 1
     os << "f " << (a + 1) << ' ' << (b + 1) << ' ' << (c + 1) << '\n';
   }
 
@@ -297,6 +377,7 @@ std::istream& operator>>(std::istream& is, Scene3D& scene) {
       float x, y, z, r, density, angularMMult, bounciness, fc;
       loader >> x >> y >> z >> density >> angularMMult >> bounciness >> fc;
       Ball newBall(Vec3(x, y, z), r);
+      // Set the attributes of the newly loaded ball
       newBall.setDensity(density);
       newBall.setAngularMassMultiplier(angularMMult);
       newBall.setBounciness(bounciness);
@@ -308,6 +389,9 @@ std::istream& operator>>(std::istream& is, Scene3D& scene) {
 
   // Then load the rest of the file as a basic obj
   is >> scene.world;
+  // Load the scene into GPU memory
+  // A good thing is that OpenGL deletes the old geometry data if this is not
+  // the first scene loaded
   scene.world.loadToGL();
 
   return is;

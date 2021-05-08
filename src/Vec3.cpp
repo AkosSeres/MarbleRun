@@ -1,3 +1,11 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #include "Vec3.h"
 
 /**
@@ -113,7 +121,7 @@ Vec3& Vec3::rotateZ(float angle) {
  */
 Vec3& Vec3::applyMatrix(const Matrix& matrix) {
   float a = x, b = y, c = z;
-  auto m = matrix.m;
+  auto m = matrix.getElements();
 
   float w = 1.0f / (m[3] * a + m[7] * b + m[11] * c + m[15]);
   x = (m[0] * a + m[4] * b + m[8] * c + m[12]) * w;

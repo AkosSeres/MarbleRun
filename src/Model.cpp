@@ -1,15 +1,24 @@
+/**
+ * ©·2021·Ákos Seres
+ *
+ * Use of this source code is governed by an MIT-style
+ * license that can be found in the LICENSE file or at
+ * https://opensource.org/licenses/MIT.
+ */
+
 #include "Model.h"
 
 /**
  * Initalises an empty model.
  */
 Model::Model() {
+  // Initalise vertex and index array pointers as NULL
   vertices = NULL;
   vCount = 0;
   indices = NULL;
   iCount = 0;
 
-  // Create vertex and index buffers
+  // Create vertex and index buffers for OpenGL
   glGenBuffers(1, &vertexBufferObj);
   glGenBuffers(1, &elementBufferObj);
 }
@@ -18,8 +27,12 @@ Model::Model() {
  * Frees the loaded memory.
  */
 Model::~Model() {
+  // Remove model data from CPU memory
   delete[] vertices;
   delete[] indices;
+  // And remove the same data from GPU memory
+  glDeleteBuffers(1, &vertexBufferObj);
+  glDeleteBuffers(1, &elementBufferObj);
 }
 
 /**
@@ -43,7 +56,9 @@ void Model::loadModel() {
 }
 
 /**
- * Loads the vertex and index data into the OpenGL buffers.
+ * Loads the vertex and index data into the OpenGL buffers. If some data is
+ * already loaded, OpenGL automatically removes it, and replaces it with the new
+ * data.
  */
 void Model::loadToGL() const {
   glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObj);
@@ -66,17 +81,22 @@ void Model::bindBuffers() const {
  * Renders the model with the given rendering mode.
  */
 void Model::render(GLint posAttrib, GLenum mode) const {
+  // Bind buffers to use them while rendering
   bindBuffers();
+  // Set the vertex attrib pointer
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  // Render the model in the given mode
   glDrawElements(mode, iCount, GL_UNSIGNED_INT, 0);
 }
 
 /**
- * Renders the model with the given rendering mode.
+ * Renders the model with the given rendering mode one triangle at a time. Can
+ * be used for wireframe rendering.
  */
 void Model::renderOneByOne(GLint posAttrib, GLenum mode) const {
   bindBuffers();
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  // Runs through the triangles in a for loop rendering them one by one
   for (GLuint i = 0; i < (iCount / 3); i++)
     glDrawElements(mode, 3, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * i * 3));
 }
