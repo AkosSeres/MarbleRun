@@ -36,6 +36,15 @@ void Camera::lookAt(const Vec3& at) {
 }
 
 /**
+ * Sets the field of view of the camera. Has to be between 0.01*pi and 0.99*pi.
+ */
+void Camera::setFOV(float newFov) {
+  if (newFov <= 0.01 * M_PI || newFov >= 0.99 * M_PI)
+    throw std::out_of_range("Too large or too small filed of view given!");
+  fov = newFov;
+}
+
+/**
  * Tilts the camera upwards by the given angle.
  */
 void Camera::tiltUp(float angle) {

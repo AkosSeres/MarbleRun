@@ -10,6 +10,7 @@
 #define _PHY3D_CAMERA_H_
 
 #include <cmath>
+#include <stdexcept>
 
 #include "Matrix.h"
 #include "Vec3.h"
@@ -31,7 +32,7 @@ class Camera {
   void setDir(const Vec3& newDir) { (dir = newDir).setLen(1); }
   void lookAt(const Vec3& at);
   void setAspectRatio(float newAr) { aspectRatio = newAr; }
-  void setFOV(float newFov) { fov = newFov; }
+  void setFOV(float newFov);
   void turnRight(float angle) { dir.rotateY(-angle); }
   void turnLeft(float angle) { dir.rotateY(angle); }
   void tiltUp(float angle);

@@ -41,7 +41,7 @@ class Ball {
   void setPosition(const Vec3& p) { pos = p; };
   Vec3 getPosition() const { return pos; };
   void setVel(const Vec3& v) { vel = v; }
-  Vec3 getVel() { return vel; }
+  Vec3 getVel() const { return vel; }
   void setDensity(float d) { density = d; };
   float getDensity() const { return density; };
   void setRadius(float R) { r = R; }

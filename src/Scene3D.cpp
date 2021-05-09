@@ -37,7 +37,11 @@ Scene3D::Scene3D(char const* titleStr) : content((initWindow(titleStr), 18)) {
       timeStopped = false;
 
   // Set the field of view of the camera as well as the aspect ratio
-  cam.setFOV((M_PI / 1.75f));
+  try {
+    cam.setFOV((M_PI / 1.75f));
+  } catch (std::exception& e) {
+    SDL_LogWarn(0, "Error trying to set the field of view: %s", e.what());
+  }
   cam.setAspectRatio((float)width / height);
 
   // Initially there are zero balls in the system

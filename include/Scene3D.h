@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 #include "Ball.h"
 #include "Camera.h"
