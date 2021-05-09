@@ -33,8 +33,8 @@ std::istream& operator>>(std::istream& is, ObjModel& model) {
   auto& vertices = model.vertices;
   auto& indices = model.indices;
   // Free up the memory first
-  delete[] vertices;
-  delete[] indices;
+  if (vertices != NULL) delete[] vertices;
+  if (indices != NULL) delete[] indices;
   std::string line;
   // Initially allocate memory for 512 vertices and triangles
   GLuint vAlloc = 512;

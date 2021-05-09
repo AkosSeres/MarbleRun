@@ -16,9 +16,6 @@ Scene3D::Scene3D(char const* titleStr) {
   // The variables indicating some button states
   WASDKeys[0] = WASDKeys[1] = WASDKeys[2] = WASDKeys[3] = spaceKey = shiftKey =
       timeStopped = false;
-  initWindow(titleStr);
-  this->loadGeometry();
-  this->initShaders();
 
   // Set the field of view of the camera as well as the aspect ratio
   cam.setFOV((M_PI / 1.75f));
@@ -28,6 +25,10 @@ Scene3D::Scene3D(char const* titleStr) {
   balls = NULL;
   ballCount = 0;
 
+  // Create window
+  initWindow(titleStr);
+  this->loadGeometry();
+  this->initShaders();
   // Set mouse capturing
   if (!SDL_GetRelativeMouseMode()) SDL_SetRelativeMouseMode(SDL_TRUE);
 }
