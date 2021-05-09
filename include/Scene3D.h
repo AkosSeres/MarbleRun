@@ -9,6 +9,14 @@
 #ifndef _PHY3D_SCENE3D_H_
 #define _PHY3D_SCENE3D_H_
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+#define GL_GLEXT_PROTOTYPES 1
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengles2.h>
+
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -19,15 +27,28 @@
 #include "Matrix.h"
 #include "Model.h"
 #include "ObjModel.h"
-#include "SDLInstance.h"
+#include "Shaders.h"
 #include "SphereModel.h"
 #include "Vec3.h"
 
-class Scene3D : public SDLInstance {
- protected:
-  void loadGeometry() override;
-  void initShaders() override;
-  void mainLoop(Uint32 t = 0) override;
+class Scene3D {
+ private:
+  SDL_Window* window;
+  SDL_GLContext glContext;
+  SDL_Renderer* renderer;
+  GLuint vertexBufferObj;
+  bool isRunning = false;
+
+  int width, height;
+
+  GLuint vertexShader;
+  GLuint pixelShader;
+  GLuint shaderProgram;
+
+  void initWindow(char const* titleStr = NULL, int w = 500, int h = 500);
+  void loadGeometry();
+  void initShaders();
+  void mainLoop(Uint32 t = 0);
 
   GLint projectionLocation;
   GLint modelViewLocation;
@@ -44,12 +65,18 @@ class Scene3D : public SDLInstance {
   bool spaceKey;
   bool shiftKey;
   bool timeStopped;
-  void keyDownEvent(const SDL_KeyboardEvent& e) override;
-  void keyUpEvent(const SDL_KeyboardEvent& e) override;
-  void mouseMotionEvent(const SDL_MouseMotionEvent& e) override;
-  void mouseButtonDownEvent(const SDL_MouseButtonEvent& e) override;
-  void resizeEvent(int width, int height) override;
-  void fileDropEvent(const char* fName) override;
+
+  void handleEvents();
+  void keyDownEvent(const SDL_KeyboardEvent& e);
+  void keyUpEvent(const SDL_KeyboardEvent& e);
+  void mouseMotionEvent(const SDL_MouseMotionEvent& e);
+  void mouseButtonDownEvent(const SDL_MouseButtonEvent& e);
+  void resizeEvent(int width, int height);
+  void fileDropEvent(const char* fName);
+
+#ifdef __EMSCRIPTEN__
+  static void getBrowserDimensions(int* width, int* height);
+#endif
 
   void placeBall();
   void addBall(const Ball& b);
@@ -58,6 +85,7 @@ class Scene3D : public SDLInstance {
  public:
   Scene3D(char const* titleStr = NULL);
   ~Scene3D();
+  void enterLoop();
   void saveScene(const char* fileName) const;
   friend std::ostream& operator<<(std::ostream& os, const Scene3D& scene);
   friend std::istream& operator>>(std::istream& is, Scene3D& scene);
