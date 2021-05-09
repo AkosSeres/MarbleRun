@@ -29,8 +29,6 @@ Scene3D::Scene3D(char const* titleStr) {
   initWindow(titleStr);
   this->loadGeometry();
   this->initShaders();
-  // Set mouse capturing
-  if (!SDL_GetRelativeMouseMode()) SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 /**
@@ -203,6 +201,9 @@ void Scene3D::keyDownEvent(const SDL_KeyboardEvent& e) {
  */
 void Scene3D::keyUpEvent(const SDL_KeyboardEvent& e) {
   switch (e.keysym.sym) {
+    case SDLK_ESCAPE:
+      SDL_SetRelativeMouseMode(SDL_FALSE);
+      break;
       // Set the correspontding boolean values false
     case SDLK_w:
       WASDKeys[0] = false;
@@ -248,7 +249,12 @@ void Scene3D::mouseMotionEvent(const SDL_MouseMotionEvent& e) {
  * press.
  */
 void Scene3D::mouseButtonDownEvent(const SDL_MouseButtonEvent& e) {
-  if (e.button == SDL_BUTTON_LEFT) placeBall();
+  if (e.button == SDL_BUTTON_LEFT) {
+    if (!SDL_GetRelativeMouseMode())
+      SDL_SetRelativeMouseMode(SDL_TRUE);
+    else
+      placeBall();
+  }
 }
 
 /**
