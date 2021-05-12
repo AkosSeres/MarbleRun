@@ -477,9 +477,9 @@ std::istream& operator>>(std::istream& is, Scene3D& scene) {
     // If the line describes a ball, load it
     if ((line.length() >= 6) && line[0] == '#' && line[1] == 'b' &&
         line[2] == 'a' && line[3] == 'l' && line[4] == 'l' && line[5] == ' ') {
-      std::istringstream loader(line.substr(5));
+      std::istringstream loader(line.substr(6));
       float x, y, z, r, density, angularMMult, bounciness, fc;
-      loader >> x >> y >> z >> density >> angularMMult >> bounciness >> fc;
+      loader >> x >> y >> z >> r >> density >> angularMMult >> bounciness >> fc;
       Ball newBall(Vec3(x, y, z), r);
       // Set the attributes of the newly loaded ball
       newBall.setDensity(density);
