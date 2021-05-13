@@ -24,7 +24,7 @@ sh build_wasm.sh
 ```
 After building the directory `dest` will contain the compiled webpage.
 ### Linux/Unix
-CMake (`sudo apt install cmake` on Ubuntu...), SDL2 library (`sudo apt install libsdl2-dev`) and an OpenGL library (e.g. `sudo apt install libgles2-mesa-dev`) has to be installed before building, then build with:
+CMake (`sudo apt install cmake` on Ubuntu...) and SDL2 development library (`sudo apt install libsdl2-dev`) has to be installed before building, then build with:
 ```
 mkdir build
 cd build
