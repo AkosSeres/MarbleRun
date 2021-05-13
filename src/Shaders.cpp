@@ -33,7 +33,9 @@ const GLchar* Shaders::squishVertex =
 // Renders the pixel with a given color and does the clipping, because
 // apparently OpenGL ES does not do it for me
 const GLchar* Shaders::customColorFragment =
-    "precision mediump float;"
+#ifdef __EMSCRIPTEN__
+    "precision highp float;"
+#endif
     "varying vec3 vPosition;"
     "uniform vec4 color;"
     "void main() {"
@@ -46,7 +48,9 @@ const GLchar* Shaders::customColorFragment =
 
 // Renders the pixel in white color
 const GLchar* Shaders::baseFragment =
-    "precision mediump float;"
+#ifdef __EMSCRIPTEN__
+    "precision highp float;"
+#endif
     "void main() {"
     "  gl_FragColor = vec4(1.0);"
     "}";

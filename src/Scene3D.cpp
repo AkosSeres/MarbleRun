@@ -82,9 +82,9 @@ void Scene3D::initWindow(char const* titleStr, int w, int h) {
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
   // Create SDL window
-  window =
-      SDL_CreateWindow(titleStr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+  window = SDL_CreateWindow(
+      titleStr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
+      SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
   // Set OpenGL related attributes
   // OpenGL ES has to be used to retain browser compatibility
@@ -134,11 +134,25 @@ void Scene3D::initShaders() {
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &Shaders::baseVertex, NULL);
   glCompileShader(vertexShader);
+  int success;
+  char infoLog[512];
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    SDL_LogError(0, "An error occured while compiling the vertex shader: %s",
+                 infoLog);
+  }
 
   // Load pixel shader
   pixelShader = glCreateShader(GL_FRAGMENT_SHADER);
   glShaderSource(pixelShader, 1, &Shaders::customColorFragment, NULL);
   glCompileShader(pixelShader);
+  glGetShaderiv(pixelShader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(pixelShader, 512, NULL, infoLog);
+    SDL_LogError(0, "An error occured while compiling the pixel shader: %s",
+                 infoLog);
+  }
 
   // Link the shaders into a program and tell
   // OpenGL to use it
@@ -146,6 +160,13 @@ void Scene3D::initShaders() {
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, pixelShader);
   glLinkProgram(shaderProgram);
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+  if (!success) {
+    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+    SDL_LogError(0,
+                 "An error occured while constructing the shader program: %s",
+                 infoLog);
+  }
   glUseProgram(shaderProgram);
 
   // Get locations in shaders
@@ -156,6 +177,7 @@ void Scene3D::initShaders() {
 
   // Tell OpenGL the format of the vertices
   glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(posAttrib);
 
   // Enable Z-buffering and Z-buffer fill offset for better wireframe visibility
   glEnable(GL_POLYGON_OFFSET_FILL);

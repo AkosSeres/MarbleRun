@@ -7,7 +7,6 @@ endif()
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
-find_package(OpenGL REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
