@@ -69,6 +69,13 @@ Scene3D::~Scene3D() {
  * Creates the SDL window with the given title and size.
  */
 void Scene3D::initWindow(char const* titleStr, int w, int h) {
+  // Initialize SDL
+  auto initResult = SDL_Init(SDL_INIT_EVERYTHING);
+  if(initResult != 0){
+    auto errorInfo = SDL_GetError();
+    SDL_LogError(0, "An error occured on initializing SDL: %s", errorInfo);
+  }
+
   // Use an empty string if title is not given.
   if (titleStr == NULL) titleStr = "";
 
@@ -80,26 +87,64 @@ void Scene3D::initWindow(char const* titleStr, int w, int h) {
   width = w;
   height = h;
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+  SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "2");
+
+  int glErrorCode;
+  auto printGlErrorIfNeeded = [&glErrorCode](const char* attributeName = ""){
+    if (glErrorCode == 0) return;
+    auto errorMsg = SDL_GetError();
+    SDL_LogError(0, "An error occured when setting the %s attribute: %s", attributeName, errorMsg);
+    glErrorCode = 0;
+  };
+  // Set OpenGL related attributes
+  // OpenGL ES has to be used to retain browser compatibility
+  // It's harder this way but I like when my projects can be quickly
+  // presented by opening a browser on virtually any device
+  // glErrorCode = SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+  // printGlErrorIfNeeded("SDL_GL_CONTEXT_EGL");
+  glErrorCode = SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  printGlErrorIfNeeded("SDL_GL_CONTEXT_PROFILE_MASK");
+  glErrorCode = SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+  printGlErrorIfNeeded("SDL_GL_CONTEXT_MAJOR_VERSION");
+  glErrorCode = SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  printGlErrorIfNeeded("SDL_GL_CONTEXT_MINOR_VERSION");
+  glErrorCode = SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+  printGlErrorIfNeeded("SDL_GL_ACCELERATED_VISUAL");
+  glErrorCode = SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  printGlErrorIfNeeded("SDL_GL_DOUBLEBUFFER");
+  glErrorCode = SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  printGlErrorIfNeeded("SDL_GL_DEPTH_SIZE");
 
   // Create SDL window
   window = SDL_CreateWindow(
       titleStr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
       SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+  if(window == NULL){
+    SDL_LogError(0, "An error occured on creating window: %s", SDL_GetError());
+  }
 
-  // Set OpenGL related attributes
-  // OpenGL ES has to be used to retain browser compatibility
-  // It's harder this way but I like when my projects can be quickly
-  // presented by opening a browser on virtually any device
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  SDL_GL_SetSwapInterval(1);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-  // Initalise OpenGL
+  // Initalize OpenGL
   SDL_GLContext glContext = SDL_GL_CreateContext(window);
+  if(glContext == NULL){
+    SDL_LogError(0, "An error occured on creating GL context: %s", SDL_GetError());
+  }
+
   renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+  if(renderer == NULL){
+    SDL_LogError(0, "An error occured on creating renderer: %s", SDL_GetError());
+  }
+
+  auto result = SDL_GL_MakeCurrent(window, glContext);
+  if(result != 0){
+    SDL_LogError(0, "An error occured on making the GL context current: %s", SDL_GetError());
+  }
+
+  glErrorCode = SDL_GL_SetSwapInterval(1);
+  printGlErrorIfNeeded("GL_SwapInterval");
+
+  auto glVersion = glGetString(GL_VERSION);
+  SDL_Log("OpenGL version is: %s", glVersion);
 }
 
 /**
@@ -130,12 +175,18 @@ void Scene3D::loadGeometry() {
  * Loads shaders and links them into a program.
  */
 void Scene3D::initShaders() {
+  char infoLog[512];
+  GLboolean indicator;
+
   // Load vertex shader
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  indicator = glIsShader(vertexShader);
+  if(!indicator) {
+    SDL_LogError(0, "Vertex shader could not be created, value is %d", vertexShader);
+  }
   glShaderSource(vertexShader, 1, &Shaders::baseVertex, NULL);
   glCompileShader(vertexShader);
   int success;
-  char infoLog[512];
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
@@ -145,6 +196,10 @@ void Scene3D::initShaders() {
 
   // Load pixel shader
   pixelShader = glCreateShader(GL_FRAGMENT_SHADER);
+  indicator = glIsShader(pixelShader);
+  if(!indicator) {
+    SDL_LogError(0, "Pixel shader could not be created, value is %d", pixelShader);
+  }
   glShaderSource(pixelShader, 1, &Shaders::customColorFragment, NULL);
   glCompileShader(pixelShader);
   glGetShaderiv(pixelShader, GL_COMPILE_STATUS, &success);
